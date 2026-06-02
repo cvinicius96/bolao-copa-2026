@@ -665,7 +665,7 @@ let DATA_FINAL=new Date('2026-06-08T23:59:59');
 let DATA_FINAL_STR='08/06/2026';
 function bolaoAberto(){return new Date()<=DATA_FINAL;}
 function dataFinalStr(){return DATA_FINAL_STR;}
-const SITE_URL='https://bolaodacopa2026-srp.netlify.app';
+const SITE_URL='https://cvinicius96.github.io/bolao-copa-2026';
 const SENHA_PART='2026';
 const GRUPO_WPP='https://chat.whatsapp.com/CgXpXz8xhv86wqXwjUgWcf?s=sw&p=i&mlu=2';
 const ADM_WPP='5571319036671';
@@ -1320,8 +1320,10 @@ function gerarMsgBoasVindas(nome){
 }
 
 function abrirWpp(ap,msg){
-  if(ap.contato){const num=ap.contato.replace(/\D/g,'');window.open('https://wa.me/55'+num+'?text='+encodeURIComponent(msg),'_blank');}
-  else{window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');}
+  // Normalizar \n literais vindos do Firebase antes de encodar
+  const msgFinal=msg.replace(/\\n/g,'\n');
+  if(ap.contato){const num=ap.contato.replace(/\D/g,'');window.open('https://wa.me/55'+num+'?text='+encodeURIComponent(msgFinal),'_blank');}
+  else{window.open('https://wa.me/?text='+encodeURIComponent(msgFinal),'_blank');}
 }
 
 function enviarBoasVindas(ap){abrirWpp(ap,gerarMsgBoasVindas(ap.nome));}
@@ -1336,7 +1338,9 @@ async function renderComunicacao(){
   const txtBV=document.getElementById('txtBoasVindas');
   try{
     const cfg=await fbGet('config','comunicacao');
-    const textoSalvo=cfg&&cfg.msgBoasVindas?cfg.msgBoasVindas:gerarMsgBVDefault();
+    const textoRaw=cfg&&cfg.msgBoasVindas?cfg.msgBoasVindas:gerarMsgBVDefault();
+    // Normalizar quebras de linha vindas do Firebase
+    const textoSalvo=textoRaw.replace(/\\n/g,'\n');
     if(prev)prev.textContent=textoSalvo;
     if(txtBV)txtBV.value=textoSalvo;
   }catch(e){
@@ -1539,7 +1543,7 @@ document.getElementById('btnWpp').addEventListener('click',()=>{
   });
   const fy=headerH+(rank.length*linhaH)+10;
   ctx.fillStyle='#006400';ctx.fillRect(8,fy,W-16,footerH-14);
-  ctx.fillStyle='#FFD700';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillText('🌐 bolaodacopa2026-srp.netlify.app',W/2,fy+22);
+  ctx.fillStyle='#FFD700';ctx.font='bold 14px Arial';ctx.textAlign='center';ctx.fillText('🌐 cvinicius96.github.io/bolao-copa-2026',W/2,fy+22);
   ctx.fillStyle='#aaaaaa';ctx.font='12px Arial';ctx.fillText('Acesse e faça suas apostas!',W/2,fy+42);
   canvas.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='ranking-bolao-copa-2026.png';a.click();setTimeout(()=>{URL.revokeObjectURL(url);window.open(GRUPO_WPP,'_blank');},800);},'image/png');
 });
