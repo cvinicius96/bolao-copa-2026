@@ -415,8 +415,12 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
     <label>WhatsApp</label>
     <input type="tel" id="editContato" placeholder="(11) 99999-1234">
     <label>Senha de acesso</label>
+    <div style="background:#0a1a0a;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:.75rem;color:#888;">Senha atual:</span>
+      <span id="editSenhaAtual" style="font-family:'Bebas Neue',cursive;font-size:1.3rem;color:var(--amarelo);letter-spacing:3px;">—</span>
+    </div>
     <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;">
-      <input type="text" id="editSenha" placeholder="Deixe vazio para manter" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.95rem;">
+      <input type="text" id="editSenha" placeholder="Nova senha (deixe vazio para manter)" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.95rem;">
       <button type="button" onclick="gerarSenhaAuto()" style="white-space:nowrap;padding:10px 12px;border-radius:8px;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.4);color:var(--amarelo);cursor:pointer;font-size:.8rem;">🎲 Gerar</button>
     </div>
     <label>Pagamento (R$ 100,00)</label>
@@ -978,6 +982,8 @@ function abrirEditModal(ap){
   document.getElementById('editPagSim').style.opacity=editPago?'1':'0.4';
   document.getElementById('editPagNao').style.opacity=editPago?'0.4':'1';
   document.getElementById('editSenha').value='';
+  const senhaAtualEl=document.getElementById('editSenhaAtual');
+  if(senhaAtualEl)senhaAtualEl.textContent=(ap.senha&&ap.senha.trim())?ap.senha.trim():'2026';
   document.getElementById('editModal').classList.add('show');
 }
 document.getElementById('editCancelar').addEventListener('click',()=>{document.getElementById('editModal').classList.remove('show');editApId=null;});
@@ -1302,8 +1308,9 @@ function renderDashboard(){
 
 // COMUNICAÇÃO
 function gerarMsgBoasVindas(nome){
+  const prev=document.getElementById('bvPreview');
   const txtBV=document.getElementById('txtBoasVindas');
-  const template=txtBV&&txtBV.value.trim()?txtBV.value:gerarMsgBVDefault();
+  const template=(prev&&prev.textContent.trim()&&!prev.textContent.includes('Clique'))?prev.textContent:(txtBV&&txtBV.value.trim()?txtBV.value:gerarMsgBVDefault());
   // Buscar a senha individual do participante
   const ap=apostadores.find(a=>a.nome.toLowerCase()===nome.toLowerCase());
   const senhaAp=(ap&&ap.senha&&ap.senha.trim())?ap.senha.trim():'2026';
@@ -1323,12 +1330,19 @@ function gerarMsgBVDefault(){
   return `Olá, *{nome}*! 👋⚽\n\n🌎 *A Copa 2026 está chegando… e o nosso bolão também!*\n\nSeu acesso já está liberado para participar de mais uma edição dessa disputa que já virou tradição entre a gente! 🏆\n\n📲 *Dados de acesso:*\n🔗 Site: ${SITE_URL}\n👤 Usuário: {nome}\n🔒 Senha: {senha}\n\n📋 *Regras essenciais:*\n✅ Cada jogo vale *1 ponto* (acerto de resultado)\n✅ São considerados apenas *Vitória / Empate / Derrota*\n✅ Apostas válidas somente até *${dataFinalStr()}*\n✅ Apostas são registradas pelo administrador\n✅ Acompanhe sua classificação em tempo real no app\n\nAgora é só entrar, acompanhar cada rodada e torcer!\n*Boa sorte no bolão!* 🏆🎉`;
 }
 
-function renderComunicacao(){
-  // Preencher preview de boas-vindas na primeira vez
+async function renderComunicacao(){
+  // Carregar texto salvo do Firebase
   const prev=document.getElementById('bvPreview');
   const txtBV=document.getElementById('txtBoasVindas');
-  if(prev&&!prev.textContent.trim()){prev.textContent=gerarMsgBVDefault();}
-  if(txtBV&&!txtBV.value.trim()){txtBV.value=gerarMsgBVDefault();}
+  try{
+    const cfg=await fbGet('config','comunicacao');
+    const textoSalvo=cfg&&cfg.msgBoasVindas?cfg.msgBoasVindas:gerarMsgBVDefault();
+    if(prev)prev.textContent=textoSalvo;
+    if(txtBV)txtBV.value=textoSalvo;
+  }catch(e){
+    if(prev&&!prev.textContent.trim())prev.textContent=gerarMsgBVDefault();
+    if(txtBV&&!txtBV.value.trim())txtBV.value=gerarMsgBVDefault();
+  }
   // Lista boas-vindas
   const listaBV=document.getElementById('partListaBV');listaBV.innerHTML='';
   if(!apostadores.length){listaBV.innerHTML='<p style="color:#666;font-size:.85rem;">Nenhum participante cadastrado.</p>';}
