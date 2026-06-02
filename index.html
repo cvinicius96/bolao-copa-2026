@@ -1333,20 +1333,12 @@ function gerarMsgBVDefault(){
 }
 
 async function renderComunicacao(){
-  // Carregar texto salvo do Firebase
+  // Sempre usar template do código — Firebase corrompe emojis
   const prev=document.getElementById('bvPreview');
   const txtBV=document.getElementById('txtBoasVindas');
-  try{
-    const cfg=await fbGet('config','comunicacao');
-    const textoRaw=cfg&&cfg.msgBoasVindas?cfg.msgBoasVindas:gerarMsgBVDefault();
-    // Normalizar quebras de linha vindas do Firebase
-    const textoSalvo=textoRaw.replace(/\\n/g,'\n');
-    if(prev)prev.textContent=textoSalvo;
-    if(txtBV)txtBV.value=textoSalvo;
-  }catch(e){
-    if(prev&&!prev.textContent.trim())prev.textContent=gerarMsgBVDefault();
-    if(txtBV&&!txtBV.value.trim())txtBV.value=gerarMsgBVDefault();
-  }
+  const textoPadrao=gerarMsgBVDefault();
+  if(prev&&!prev.textContent.trim())prev.textContent=textoPadrao;
+  if(txtBV&&!txtBV.value.trim())txtBV.value=textoPadrao;
   // Lista boas-vindas
   const listaBV=document.getElementById('partListaBV');listaBV.innerHTML='';
   if(!apostadores.length){listaBV.innerHTML='<p style="color:#666;font-size:.85rem;">Nenhum participante cadastrado.</p>';}
