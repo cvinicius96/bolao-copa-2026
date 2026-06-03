@@ -381,6 +381,26 @@ h1,h2,h3{font-family:'Bebas Neue',cursive;}
 .slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#444;border-radius:50%;transition:.3s;}
 input:checked+.slider{background:#006600;border-color:#009900;}
 input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
+
+/* SUB-ABAS DO DASHBOARD */
+.dash-subtabs{display:flex;gap:0;margin-bottom:16px;background:#0a1a0a;border-radius:10px;padding:4px;border:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.dash-subtabs::-webkit-scrollbar{display:none;}
+.dash-subtab{flex:1;padding:8px 10px;text-align:center;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.8rem;letter-spacing:1px;color:#555;border-radius:7px;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.dash-subtab.active{background:linear-gradient(135deg,var(--verde),#004d00);color:var(--amarelo);}
+.dash-subpanel{display:none;}
+.dash-subpanel.active{display:block;}
+
+/* CAMPO PAGO PARA */
+.pago-para-select{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.88rem;margin-top:6px;outline:none;}
+.pago-para-select:focus{border-color:var(--amarelo);}
+.pago-para-badge{display:inline-block;font-size:.65rem;padding:2px 7px;border-radius:10px;font-weight:700;background:rgba(68,136,255,.15);color:#88aaff;border:1px solid #223366;margin-left:5px;}
+
+/* RESUMO DE PAGAMENTOS */
+.resumo-pag-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.resumo-pag-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.resumo-pag-nome{font-family:'Bebas Neue',cursive;font-size:1rem;color:var(--amarelo);}
+.resumo-pag-total{font-family:'Bebas Neue',cursive;font-size:1.4rem;color:var(--green);}
+.resumo-pag-sub{font-size:.72rem;color:#666;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:#050f05;}
 ::-webkit-scrollbar-thumb{background:var(--verde);border-radius:3px;}
@@ -424,9 +444,17 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
       <button type="button" onclick="gerarSenhaAuto()" style="white-space:nowrap;padding:10px 12px;border-radius:8px;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.4);color:var(--amarelo);cursor:pointer;font-size:.8rem;">🎲 Gerar</button>
     </div>
     <label>Pagamento (R$ 100,00)</label>
-    <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <div style="display:flex;gap:8px;margin-bottom:8px;">
       <button type="button" id="editPagSim" onclick="setEditPag(true)" style="flex:1;padding:9px;border-radius:8px;border:2px solid #006600;background:rgba(0,180,0,.15);color:#00dd00;cursor:pointer;font-weight:700;font-size:.9rem;">✅ PAGO</button>
       <button type="button" id="editPagNao" onclick="setEditPag(false)" style="flex:1;padding:9px;border-radius:8px;border:2px solid #883300;background:rgba(200,80,0,.15);color:#ff8844;cursor:pointer;font-weight:700;font-size:.9rem;">⏳ PENDENTE</button>
+    </div>
+    <div id="pagParaWrap" style="margin-bottom:12px;display:none;">
+      <label style="font-size:.75rem;color:#888;">Pagamento entregue para:</label>
+      <select class="pago-para-select" id="editPagoPara">
+        <option value="">— Selecione —</option>
+        <option value="Caio">Caio</option>
+        <option value="Osmarinho">Osmarinho</option>
+      </select>
     </div>
     <div class="edit-btns">
       <button class="btn-cancel-edit" id="editCancelar">Cancelar</button>
@@ -541,7 +569,14 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
     <div class="tab-content" id="tab-dashboard">
       <h2 class="section-title">📈 DASHBOARD</h2>
       <p class="section-sub">Visão geral do bolão em tempo real</p>
-      <div id="dashboardConteudo"></div>
+      <div class="dash-subtabs" id="dashSubtabs">
+        <div class="dash-subtab active" data-sub="geral">📊 Geral</div>
+        <div class="dash-subtab" data-sub="pagamentos">💰 Pagamentos</div>
+        <div class="dash-subtab" data-sub="status">👤 Status</div>
+      </div>
+      <div class="dash-subpanel active" id="dsub-geral"></div>
+      <div class="dash-subpanel" id="dsub-pagamentos"></div>
+      <div class="dash-subpanel" id="dsub-status"></div>
     </div>
 
     <div class="tab-content" id="tab-comunicacao">
@@ -946,7 +981,8 @@ function renderApostadores(){
     const nm=document.createElement('div');nm.className='apostador-nome';nm.textContent=ap.nome;
     const pw=document.createElement('div');pw.style.cssText='font-size:.7rem;color:#888;margin-top:2px;';pw.textContent='Senha: 2026';
     const pagBadge=document.createElement('div');pagBadge.style.cssText='margin-top:5px;';
-    pagBadge.innerHTML=ap.pago?'<span class="badge-pago">✅ PAGO</span>':'<span class="badge-pendente">⏳ PENDENTE</span>';
+    const pagoParaStr=ap.pago&&ap.pagoPara?`<span class="pago-para-badge">${ap.pagoPara}</span>`:'';
+    pagBadge.innerHTML=ap.pago?`<span class="badge-pago">✅ PAGO</span>${pagoParaStr}`:'<span class="badge-pendente">⏳ PENDENTE</span>';
 
     // Engrenagem
     const eng=document.createElement('button');eng.className='btn-engrenagem';eng.textContent='⚙️';eng.title='Gerenciar';
@@ -984,6 +1020,11 @@ function abrirEditModal(ap){
   document.getElementById('editSenha').value='';
   const senhaAtualEl=document.getElementById('editSenhaAtual');
   if(senhaAtualEl)senhaAtualEl.textContent=(ap.senha&&ap.senha.trim())?ap.senha.trim():'2026';
+  // Pago para
+  const wrap=document.getElementById('pagParaWrap');
+  const sel=document.getElementById('editPagoPara');
+  if(wrap)wrap.style.display=ap.pago?'block':'none';
+  if(sel)sel.value=ap.pagoPara||'';
   document.getElementById('editModal').classList.add('show');
 }
 document.getElementById('editCancelar').addEventListener('click',()=>{document.getElementById('editModal').classList.remove('show');editApId=null;});
@@ -993,7 +1034,8 @@ document.getElementById('editSalvar').addEventListener('click',async()=>{
   if(!nome){toast('Digite um nome!','err');return;}
   if(apostadores.find(a=>a.id!==editApId&&a.nome.toLowerCase()===nome.toLowerCase())){toast('Nome já existe!','err');return;}
   const senhaEdit=document.getElementById('editSenha').value.trim();
-  const dadosEdit={nome,contato,pago:editPago};
+  const pagoPara=document.getElementById('editPagoPara')?.value||'';
+  const dadosEdit={nome,contato,pago:editPago,pagoPara:editPago?pagoPara:''};
   if(senhaEdit)dadosEdit.senha=senhaEdit;
   await fbSet('apostadores',editApId,dadosEdit);
   document.getElementById('editModal').classList.remove('show');
@@ -1116,195 +1158,118 @@ function renderCountdown(elId){
   update();if(!el._cdInt){el._cdInt=setInterval(update,1000);}
 }
 
-// DASHBOARD
-function renderDashboard(){
-  const cont=document.getElementById('dashboardConteudo');cont.innerHTML='';
+// DASHBOARD — renderização por painel (evita limpeza ao sync)
+let dashPainelAtivo='geral';
+
+function renderDashGeral(){
+  const cont=document.getElementById('dsub-geral');
+  if(!cont)return;
+  cont.innerHTML='';
   const total=apostadores.length,comApostas=apostadores.filter(ap=>Object.keys(apostas[ap.id]||{}).length>0).length,completos=apostadores.filter(ap=>Object.keys(apostas[ap.id]||{}).length===72).length,semApostas=total-comApostas,totalJogos=JOGOS.length,jogosComRes=JOGOS.filter(j=>resultados[j.id]).length,pctP=total>0?Math.round(comApostas/total*100):0,pctJ=Math.round(jogosComRes/totalJogos*100),aberto=bolaoAberto(),rank=calcRanking(),totalPalpites=apostadores.reduce((s,ap)=>s+Object.keys(apostas[ap.id]||{}).length,0),mediaP=total>0?Math.round(totalPalpites/total):0;
 
-  // [01] COUNTDOWN
+  // Countdown
   const cdDiv=document.createElement('div');cdDiv.id='dashCountdown';cont.appendChild(cdDiv);
   renderCountdown('dashCountdown');
 
-  // STATUS GERAL — usar createElement para não destruir cdDiv com innerHTML+=
-  const statusBanner=document.createElement('div');
-  statusBanner.style.cssText=`margin-bottom:16px;padding:14px;border-radius:10px;background:${aberto?'rgba(0,150,0,.15)':'rgba(150,0,0,.15)'};border:1px solid ${aberto?'#006600':'#880000'};display:flex;align-items:center;gap:10px;`;
-  statusBanner.innerHTML=`<span style="font-size:1.6rem;">${aberto?'🟢':'🔒'}</span><div><div style="font-family:'Bebas Neue',cursive;font-size:1.1rem;color:${aberto?'#00dd00':'#ff6666'};">${aberto?'BOLÃO ABERTO':'BOLÃO ENCERRADO'}</div><div style="font-size:.78rem;color:#888;">${aberto?'Apostas abertas até':'Encerrado em'} <strong style="color:#ddd;">${dataFinalStr()}</strong></div></div>`;
-  cont.appendChild(statusBanner);
+  // Status banner
+  const sb=document.createElement('div');
+  sb.style.cssText=`margin-bottom:16px;padding:14px;border-radius:10px;background:${aberto?'rgba(0,150,0,.15)':'rgba(150,0,0,.15)'};border:1px solid ${aberto?'#006600':'#880000'};display:flex;align-items:center;gap:10px;`;
+  sb.innerHTML=`<span style="font-size:1.6rem;">${aberto?'🟢':'🔒'}</span><div><div style="font-family:'Bebas Neue',cursive;font-size:1.1rem;color:${aberto?'#00dd00':'#ff6666'};">${aberto?'BOLÃO ABERTO':'BOLÃO ENCERRADO'}</div><div style="font-size:.78rem;color:#888;">${aberto?'Apostas abertas até':'Encerrado em'} <strong style="color:#ddd;">${dataFinalStr()}</strong></div></div>`;
+  cont.appendChild(sb);
 
-  const kpiWrap=document.createElement('div');
-  kpiWrap.innerHTML=`<div class="dash-grid"><div class="kpi-card"><div class="kpi-num" style="color:var(--amarelo);">${total}</div><div class="kpi-label">Participantes</div></div><div class="kpi-card"><div class="kpi-num" style="color:#00dd00;">${comApostas}</div><div class="kpi-label">Apostaram</div><div class="kpi-sub">${pctP}% do total</div><div class="progress-bar-wrap"><div class="progress-bar" style="width:${pctP}%"></div></div></div><div class="kpi-card"><div class="kpi-num" style="color:#ff6666;">${semApostas}</div><div class="kpi-label">Sem apostas</div></div><div class="kpi-card"><div class="kpi-num" style="color:#00aaff;">${completos}</div><div class="kpi-label">Completos</div><div class="kpi-sub">72/72 palpites</div></div><div class="kpi-card"><div class="kpi-num" style="color:var(--amarelo);">${jogosComRes}</div><div class="kpi-label">Com resultado</div><div class="kpi-sub">de ${totalJogos} jogos</div><div class="progress-bar-wrap"><div class="progress-bar" style="width:${pctJ}%"></div></div></div><div class="kpi-card"><div class="kpi-num" style="color:#bb88ff;">${mediaP}</div><div class="kpi-label">Média palpites</div></div></div>`;
-  cont.appendChild(kpiWrap);
+  // KPIs
+  const kw=document.createElement('div');
+  kw.innerHTML=`<div class="dash-grid"><div class="kpi-card"><div class="kpi-num" style="color:var(--amarelo);">${total}</div><div class="kpi-label">Participantes</div></div><div class="kpi-card"><div class="kpi-num" style="color:#00dd00;">${comApostas}</div><div class="kpi-label">Apostaram</div><div class="kpi-sub">${pctP}%</div><div class="progress-bar-wrap"><div class="progress-bar" style="width:${pctP}%"></div></div></div><div class="kpi-card"><div class="kpi-num" style="color:#ff6666;">${semApostas}</div><div class="kpi-label">Sem apostas</div></div><div class="kpi-card"><div class="kpi-num" style="color:#00aaff;">${completos}</div><div class="kpi-label">Completos</div><div class="kpi-sub">72/72</div></div><div class="kpi-card"><div class="kpi-num" style="color:var(--amarelo);">${jogosComRes}</div><div class="kpi-label">Com resultado</div><div class="kpi-sub">de ${totalJogos}</div><div class="progress-bar-wrap"><div class="progress-bar" style="width:${pctJ}%"></div></div></div><div class="kpi-card"><div class="kpi-num" style="color:#bb88ff;">${mediaP}</div><div class="kpi-label">Média palpites</div></div></div>`;
+  cont.appendChild(kw);
 
-  if(rank.length>0&&jogosComRes>0){const l=rank[0];const liderEl=document.createElement('div');liderEl.style.cssText='background:linear-gradient(135deg,rgba(184,134,11,.2),rgba(255,215,0,.1));border:1px solid #B8860B;border-radius:12px;padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;';liderEl.innerHTML=`<span style="font-size:2rem;">👑</span><div><div style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.1rem;">LÍDER ATUAL</div><div style="font-size:1rem;font-weight:700;">${l.nome}</div><div style="font-size:.78rem;color:#aaa;">${l.pts} pontos • ✅${l.ac} acertos</div></div>`;cont.appendChild(liderEl);}
+  if(rank.length>0&&jogosComRes>0){const l=rank[0];const le=document.createElement('div');le.style.cssText='background:linear-gradient(135deg,rgba(184,134,11,.2),rgba(255,215,0,.1));border:1px solid #B8860B;border-radius:12px;padding:14px;margin-bottom:16px;display:flex;align-items:center;gap:12px;';le.innerHTML=`<span style="font-size:2rem;">👑</span><div><div style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.1rem;">LÍDER ATUAL</div><div style="font-size:1rem;font-weight:700;">${l.nome}</div><div style="font-size:.78rem;color:#aaa;">${l.pts} pts • ✅${l.ac}</div></div>`;cont.appendChild(le);}
 
-  // [06] JOGOS DE HOJE
-  const hoje=new Date();const dHoje=String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0');
+  // Jogos de hoje
+  const hoje=new Date(),dHoje=String(hoje.getDate()).padStart(2,'0')+'/'+String(hoje.getMonth()+1).padStart(2,'0');
   const jogosHoje=JOGOS.filter(j=>j.d===dHoje).sort((a,b)=>toMin(a.h)-toMin(b.h));
-  if(jogosHoje.length>0){
-    const hCard=document.createElement('div');hCard.className='hoje-card';
-    hCard.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:10px;">📅 JOGOS DE HOJE — ${dHoje}</h3>`;
-    jogosHoje.forEach(j=>{
-      const r=resultados[j.id];
-      const hj=document.createElement('div');hj.className='hoje-jogo';
-      hj.innerHTML=`<div class="hoje-times">${j.a} <span style="color:#888;">x</span> ${j.b}</div><div class="hoje-info">${j.h} • Gr.${j.g}${r?`<br><span style="color:${r==='A'?'#00dd00':r==='E'?'#FFD700':'#ff6666'}">Res: ${r==='A'?j.a:r==='E'?'Empate':j.b}</span>`:''}</div>`;
-      hCard.appendChild(hj);
-    });
-    cont.appendChild(hCard);
-  }
-  // [07] PROJEÇÃO DO PRÊMIO
-  const pagos=apostadores.filter(a=>a.pago===true);
-  const totalArrec=pagos.length*100;
-  const totalEsp=apostadores.length*100;
-  const reservaAdm=Math.round(totalArrec*0.10);
-  const premioLiq=totalArrec-reservaAdm;
-  const premDiv=document.createElement('div');premDiv.className='premio-card';
-  premDiv.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:4px;">💰 PROJEÇÃO DO PRÊMIO</h3>
-    <p style="font-size:.72rem;color:#888;margin-bottom:0;">10% da arrecadação reservados para manutenção do sistema</p>
-    <div class="premio-grid">
-      <div class="premio-kpi"><div class="premio-val">R$${totalArrec}</div><div class="premio-lbl">Arrecadado</div><div class="premio-sub">${pagos.length}/${apostadores.length} pagos</div></div>
-      <div class="premio-kpi"><div class="premio-val" style="color:#ff8844;">R$${reservaAdm}</div><div class="premio-lbl">Admin (10%)</div><div class="premio-sub">Manutenção</div></div>
-      <div class="premio-kpi"><div class="premio-val" style="color:#00dd00;">R$${premioLiq}</div><div class="premio-lbl">Prêmio líquido</div><div class="premio-sub">Para o vencedor</div></div>
-      <div class="premio-kpi"><div class="premio-val" style="color:#aaa;">R$${totalEsp}</div><div class="premio-lbl">Potencial total</div><div class="premio-sub">Se todos pagarem</div></div>
-    </div>`;
-  const barPrem=document.createElement('div');barPrem.style.cssText='height:8px;border-radius:4px;background:var(--border);margin-top:10px;overflow:hidden;';
-  const pctArrec=totalEsp>0?Math.round(totalArrec/totalEsp*100):0;
-  barPrem.innerHTML=`<div style="height:100%;width:${pctArrec}%;background:linear-gradient(90deg,#FFD700,#FFA500);border-radius:4px;"></div>`;
-  premDiv.appendChild(barPrem);
-  cont.appendChild(premDiv);
+  if(jogosHoje.length>0){const hc=document.createElement('div');hc.className='hoje-card';hc.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:10px;">📅 JOGOS DE HOJE — ${dHoje}</h3>`;jogosHoje.forEach(j=>{const r=resultados[j.id];const hj=document.createElement('div');hj.className='hoje-jogo';hj.innerHTML=`<div class="hoje-times">${j.a} <span style="color:#888;">x</span> ${j.b}</div><div class="hoje-info">${j.h} • Gr.${j.g}${r?`<br><span style="color:${r==='A'?'#00dd00':r==='E'?'#FFD700':'#ff6666'}">Res: ${r==='A'?j.a:r==='E'?'Empate':j.b}</span>`:''}</div>`;hc.appendChild(hj);});cont.appendChild(hc);}
 
-  // [02] EVOLUÇÃO DO RANKING (delta entre última e penúltima rodada)
+  // Projeção prêmio
+  const pagos2=apostadores.filter(a=>a.pago===true);
+  const totalArrec=pagos2.length*100,totalEsp=apostadores.length*100,reservaAdm=Math.round(totalArrec*0.10),premioLiq=totalArrec-reservaAdm,pctArrec=totalEsp>0?Math.round(totalArrec/totalEsp*100):0;
+  const pd=document.createElement('div');pd.className='premio-card';
+  pd.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:4px;">💰 PROJEÇÃO DO PRÊMIO</h3><p style="font-size:.72rem;color:#888;margin-bottom:0;">10% reservado para manutenção</p><div class="premio-grid"><div class="premio-kpi"><div class="premio-val">R$${totalArrec}</div><div class="premio-lbl">Arrecadado</div><div class="premio-sub">${pagos2.length}/${apostadores.length} pagos</div></div><div class="premio-kpi"><div class="premio-val" style="color:#ff8844;">R$${reservaAdm}</div><div class="premio-lbl">Admin (10%)</div></div><div class="premio-kpi"><div class="premio-val" style="color:#00dd00;">R$${premioLiq}</div><div class="premio-lbl">Prêmio líquido</div></div><div class="premio-kpi"><div class="premio-val" style="color:#aaa;">R$${totalEsp}</div><div class="premio-lbl">Potencial total</div></div></div>`;
+  const bp=document.createElement('div');bp.style.cssText='height:8px;border-radius:4px;background:var(--border);margin-top:10px;overflow:hidden;';bp.innerHTML=`<div style="height:100%;width:${pctArrec}%;background:linear-gradient(90deg,#FFD700,#FFA500);border-radius:4px;"></div>`;pd.appendChild(bp);cont.appendChild(pd);
+
+  // Evolução ranking
   const datasComRes=[...new Set(JOGOS.filter(j=>resultados[j.id]).map(j=>j.d))].sort((a,b)=>{const[da,ma]=a.split('/').map(Number);const[db,mb]=b.split('/').map(Number);return ma!==mb?ma-mb:da-db;});
-  if(datasComRes.length>=2&&rank.length>0){
-    const evolDiv=document.createElement('div');evolDiv.style.marginBottom='14px';
-    evolDiv.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:8px;">📈 EVOLUÇÃO DO RANKING</h3>`;
-    // Calcular ranking da penúltima rodada
-    const penultData=datasComRes[datasComRes.length-2];
-    const resPenult={};JOGOS.filter(j=>j.d!==datasComRes[datasComRes.length-1]&&resultados[j.id]).forEach(j=>resPenult[j.id]=resultados[j.id]);
-    const rankAnt=apostadores.map(ap=>{const m=apostas[ap.id]||{};let pts=0,ac=0;JOGOS.forEach(j=>{const r=resPenult[j.id],a=m[j.id];if(r&&a&&a===r){pts++;ac++;}});return{...ap,pts,ac};}).sort((a,b)=>b.pts-a.pts||b.ac-a.ac);
-    const posAnt={};rankAnt.forEach((ap,i)=>posAnt[ap.id]=i+1);
-    rank.forEach((ap,i)=>{
-      const pos=i+1,ant=posAnt[ap.id]||pos,delta=ant-pos;
-      const el=document.createElement('div');el.className='evol-row';
-      const em=['🥇','🥈','🥉'][i]||(pos+'º');
-      const dEl=delta>0?`<span class="evol-delta delta-up">▲${delta}</span>`:delta<0?`<span class="evol-delta delta-dn">▼${Math.abs(delta)}</span>`:`<span class="evol-delta delta-eq">—</span>`;
-      el.innerHTML=`<div class="evol-pos">${em}</div><div class="evol-nome">${ap.nome}</div><div class="evol-pts">${ap.pts}pts</div>${dEl}`;
-      evolDiv.appendChild(el);
-    });
-    cont.appendChild(evolDiv);
-  }
+  if(datasComRes.length>=2&&rank.length>0){const ed=document.createElement('div');ed.style.marginBottom='14px';ed.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:8px;">📈 EVOLUÇÃO DO RANKING</h3>`;const resPenult={};JOGOS.filter(j=>j.d!==datasComRes[datasComRes.length-1]&&resultados[j.id]).forEach(j=>resPenult[j.id]=resultados[j.id]);const rankAnt=apostadores.map(ap=>{const m=apostas[ap.id]||{};let pts=0,ac=0;JOGOS.forEach(j=>{const r=resPenult[j.id],a=m[j.id];if(r&&a&&a===r){pts++;ac++;}});return{...ap,pts,ac};}).sort((a,b)=>b.pts-a.pts||b.ac-a.ac);const posAnt={};rankAnt.forEach((ap,i)=>posAnt[ap.id]=i+1);rank.forEach((ap,i)=>{const pos=i+1,ant=posAnt[ap.id]||pos,delta=ant-pos;const el=document.createElement('div');el.className='evol-row';const em=['🥇','🥈','🥉'][i]||(pos+'º');const dEl=delta>0?`<span class="evol-delta delta-up">▲${delta}</span>`:delta<0?`<span class="evol-delta delta-dn">▼${Math.abs(delta)}</span>`:`<span class="evol-delta delta-eq">—</span>`;el.innerHTML=`<div class="evol-pos">${em}</div><div class="evol-nome">${ap.nome}</div><div class="evol-pts">${ap.pts}pts</div>${dEl}`;ed.appendChild(el);});cont.appendChild(ed);}
 
-  // [03] TAXA DE ACERTO POR JOGO
-  if(jogosComRes>0&&apostadores.length>0){
-    const taxaDiv=document.createElement('div');taxaDiv.style.marginBottom='14px';
-    const taxaSecs=document.createElement('details');taxaSecs.style.marginBottom='0';
-    const txSum=document.createElement('summary');txSum.style.cssText='font-family:"Bebas Neue",cursive;color:var(--amarelo);font-size:1.1rem;cursor:pointer;margin-bottom:8px;list-style:none;display:flex;align-items:center;gap:8px;';
-    txSum.innerHTML='🎯 TAXA DE ACERTO POR JOGO <span style="font-size:.7rem;color:#666;font-family:Roboto,sans-serif;">(clique para expandir)</span>';
-    taxaSecs.appendChild(txSum);
-    const jogosCRes=JOGOS.filter(j=>resultados[j.id]);
-    const taxaRows=jogosCRes.map(j=>{
-      let ac=0,tot=0;apostadores.forEach(ap=>{const v=apostas[ap.id]||{};if(v[j.id]){tot++;if(v[j.id]===resultados[j.id])ac++;}});
-      const pct=tot>0?Math.round(ac/tot*100):0;return{j,ac,tot,pct};
-    }).sort((a,b)=>a.pct-b.pct);
-    taxaRows.forEach(({j,ac,tot,pct})=>{
-      const cor=pct>=60?'#00dd00':pct>=30?'#FFD700':'#ff6666';
-      const row=document.createElement('div');row.className='acerto-row';
-      row.innerHTML=`<div style="flex:1;min-width:0;"><div class="acerto-names">${j.a} x ${j.b}</div><div style="font-size:.68rem;color:#666;">Gr.${j.g} • ${j.d}</div><div class="acerto-bar"><div class="acerto-fill" style="width:${pct}%;background:${cor};"></div></div></div><div class="acerto-pct" style="color:${cor};">${pct}%<div style="font-size:.65rem;color:#888;">${ac}/${tot}</div></div>`;
-      taxaSecs.appendChild(row);
-    });
-    cont.appendChild(taxaSecs);
-  }
+  // Taxa de acerto
+  if(jogosComRes>0&&apostadores.length>0){const td=document.createElement('details');td.style.marginBottom='14px';const ts=document.createElement('summary');ts.style.cssText='font-family:Bebas Neue,cursive;color:var(--amarelo);font-size:1.1rem;cursor:pointer;margin-bottom:8px;list-style:none;';ts.textContent='🎯 TAXA DE ACERTO POR JOGO';td.appendChild(ts);const jogosCRes=JOGOS.filter(j=>resultados[j.id]);const taxaRows=jogosCRes.map(j=>{let ac=0,tot=0;apostadores.forEach(ap=>{const v=apostas[ap.id]||{};if(v[j.id]){tot++;if(v[j.id]===resultados[j.id])ac++;}});const pct=tot>0?Math.round(ac/tot*100):0;return{j,ac,tot,pct};}).sort((a,b)=>a.pct-b.pct);taxaRows.forEach(({j,ac,tot,pct})=>{const cor=pct>=60?'#00dd00':pct>=30?'#FFD700':'#ff6666';const row=document.createElement('div');row.className='acerto-row';row.innerHTML=`<div style="flex:1;min-width:0;"><div class="acerto-names">${j.a} x ${j.b}</div><div style="font-size:.68rem;color:#666;">Gr.${j.g} • ${j.d}</div><div class="acerto-bar"><div class="acerto-fill" style="width:${pct}%;background:${cor};"></div></div></div><div class="acerto-pct" style="color:${cor};">${pct}%<div style="font-size:.65rem;color:#888;">${ac}/${tot}</div></div>`;td.appendChild(row);});cont.appendChild(td);}
 
-  // [05] HEAT MAP DE APOSTAS (revelado após fechamento)
-  if(!bolaoAberto()&&apostadores.length>0){
-    const hmDiv=document.createElement('details');hmDiv.style.marginBottom='14px';
-    const hmSum=document.createElement('summary');hmSum.style.cssText='font-family:"Bebas Neue",cursive;color:var(--amarelo);font-size:1.1rem;cursor:pointer;margin-bottom:8px;list-style:none;';
-    hmSum.textContent='🔥 HEAT MAP DE APOSTAS POR JOGO';
-    hmDiv.appendChild(hmSum);
-    const totAp=apostadores.length;
-    GRUPOS.forEach(g=>{
-      const gh=document.createElement('div');gh.innerHTML=`<div class="grupo-header" style="margin-top:0;margin-bottom:6px;">GRUPO ${g}</div>`;hmDiv.appendChild(gh);
-      JOGOS.filter(j=>j.g===g).forEach(j=>{
-        let cntA=0,cntE=0,cntB=0;apostadores.forEach(ap=>{const v=(apostas[ap.id]||{})[j.id];if(v==='A')cntA++;else if(v==='E')cntE++;else if(v==='B')cntB++;});
-        const tot=cntA+cntE+cntB||1;
-        const pA=Math.round(cntA/tot*100),pE=Math.round(cntE/tot*100),pB=Math.round(cntB/tot*100);
-        const row=document.createElement('div');row.className='heat-row';
-        row.innerHTML=`<div class="ht-label"><strong>${j.a}</strong><br><span style="color:#888;font-size:.68rem;">${j.d}</span></div><div class="heat-bar-wrap">${pA>0?`<div class="heat-seg ha" style="flex:${pA}">${pA>15?pA+'%':''}</div>`:''} ${pE>0?`<div class="heat-seg he" style="flex:${pE}">${pE>15?pE+'%':''}</div>`:''} ${pB>0?`<div class="heat-seg hb" style="flex:${pB}">${pB>15?pB+'%':''}</div>`:''}</div><div class="heat-info"><strong>${j.b}</strong><br>${cntA}/${cntE}/${cntB}</div>`;
-        hmDiv.appendChild(row);
-      });
-    });
-    cont.appendChild(hmDiv);
-  } else if(bolaoAberto()&&apostadores.length>0){
-    const hmNote=document.createElement('div');hmNote.style.cssText='background:rgba(0,0,0,.3);border:1px dashed #333;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#555;text-align:center;';
-    hmNote.textContent='🔥 Heat Map de apostas disponível após o encerramento das apostas (08/06)';
-    cont.appendChild(hmNote);
-  }
-
-  // PAGAMENTOS
-  const pendentes2=apostadores.filter(a=>!a.pago);
-  const totalArrecadado=pagos.length*100;
-  const totalEsperado=apostadores.length*100;
-  const pctPag=total>0?Math.round(pagos.length/total*100):0;
-  // ---- SEÇÃO PAGAMENTO ----
-  const secPag=document.createElement('div');secPag.style.marginBottom='18px';
-  const pagTituloRow=document.createElement('div');pagTituloRow.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;';
-  pagTituloRow.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.2rem;margin:0;">💰 CONTROLE DE PAGAMENTO</h3>`;
-  const pagFiltros=document.createElement('div');pagFiltros.className='dash-filtro-row';pagFiltros.style.margin='0';
-  pagFiltros.innerHTML=`<button class="dash-filtro-btn f-todos active" data-fpag="todos">Todos</button><button class="dash-filtro-btn f-pago" data-fpag="pago">✅ Pagos</button><button class="dash-filtro-btn f-pend" data-fpag="pend">⏳ Pendentes</button>`;
-  pagTituloRow.appendChild(pagFiltros);
-  secPag.appendChild(pagTituloRow);
-  const kpiPag=document.createElement('div');kpiPag.className='dash-grid';kpiPag.style.marginBottom='12px';
-  kpiPag.innerHTML=`<div class="kpi-card"><div class="kpi-num" style="color:#00dd00;">${pagos.length}</div><div class="kpi-label">Pagamentos OK</div></div><div class="kpi-card"><div class="kpi-num" style="color:#ff8844;">${pendentes2.length}</div><div class="kpi-label">Pendentes</div></div><div class="kpi-card"><div class="kpi-num" style="color:var(--amarelo);font-size:1.6rem;">R$${totalArrecadado}</div><div class="kpi-label">Arrecadado</div><div class="kpi-sub">de R$${totalEsperado} esperados</div></div>`;
-  secPag.appendChild(kpiPag);
-  const barPag=document.createElement('div');barPag.className='progress-bar-wrap';barPag.style.cssText='margin-bottom:14px;height:12px;';barPag.innerHTML=`<div class="progress-bar" style="width:${pctPag}%"></div>`;
-  secPag.appendChild(barPag);
-  const listaPagRows=document.createElement('div');listaPagRows.id='dashPagLista';
-  const renderPagLista=(filtro)=>{
-    listaPagRows.innerHTML='';
-    const lista=filtro==='pago'?pagos:filtro==='pend'?pendentes2:apostadores;
-    if(!lista.length){listaPagRows.innerHTML='<p style="color:#666;font-size:.82rem;text-align:center;padding:10px;">Nenhum registro.</p>';return;}
-    lista.forEach(ap=>{
-      const row=document.createElement('div');row.className='pag-row';
-      row.innerHTML=`<div style="display:flex;align-items:center;gap:8px;"><div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--verde),var(--amarelo));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#000;flex-shrink:0;">${ap.nome[0].toUpperCase()}</div><div style="font-weight:700;font-size:.85rem;">${ap.nome}</div></div><span class="${ap.pago?'badge-pago':'badge-pendente'}">${ap.pago?'✅ PAGO':'⏳ PENDENTE'}</span>`;
-      listaPagRows.appendChild(row);
-    });
-  };
-  renderPagLista('todos');
-  pagFiltros.querySelectorAll('.dash-filtro-btn').forEach(b=>b.addEventListener('click',()=>{
-    pagFiltros.querySelectorAll('.dash-filtro-btn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');renderPagLista(b.dataset.fpag);
-  }));
-  secPag.appendChild(listaPagRows);
-  cont.appendChild(secPag);
-
-  // ---- SEÇÃO STATUS POR PARTICIPANTE ----
-  const secEl=document.createElement('div');secEl.style.marginBottom='18px';
-  const statusTituloRow=document.createElement('div');statusTituloRow.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;';
-  statusTituloRow.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.2rem;margin:0;">👤 Status por Participante</h3>`;
-  const statusFiltros=document.createElement('div');statusFiltros.className='dash-filtro-row';statusFiltros.style.margin='0';
-  statusFiltros.innerHTML=`<button class="dash-filtro-btn f-todos active" data-fst="todos">Todos</button><button class="dash-filtro-btn f-apost" data-fst="apostou">✅ Apostou</button><button class="dash-filtro-btn f-sem" data-fst="sem">❌ Sem apostas</button>`;
-  statusTituloRow.appendChild(statusFiltros);
-  secEl.appendChild(statusTituloRow);
-  const listaStatusRows=document.createElement('div');listaStatusRows.id='dashStatusLista';
-  const renderStatusLista=(filtro)=>{
-    listaStatusRows.innerHTML='';
-    const lista=apostadores.filter(ap=>{const qtd=Object.keys(apostas[ap.id]||{}).length;if(filtro==='apostou')return qtd>0;if(filtro==='sem')return qtd===0;return true;});
-    if(!lista.length){listaStatusRows.innerHTML='<p style="color:#666;font-size:.82rem;text-align:center;padding:10px;">Nenhum registro.</p>';return;}
-    lista.forEach(ap=>{
-      const qtd=Object.keys(apostas[ap.id]||{}).length,r=rank.find(r=>r.id===ap.id)||{pts:0,ac:0},pct=Math.round(qtd/72*100);
-      let badge,cls;if(qtd===0){badge='Sem apostas';cls='vazio';}else if(qtd<72){badge=qtd+'/72 palpites';cls='parcial';}else{badge='✅ Completo';cls='completo';}
-      const row=document.createElement('div');row.className='ap-status-row';
-      row.innerHTML=`<div style="display:flex;align-items:center;gap:8px;"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--verde),var(--amarelo));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#000;flex-shrink:0;">${ap.nome[0].toUpperCase()}</div><div><div style="font-weight:700;font-size:.88rem;">${ap.nome}</div><div style="font-size:.7rem;color:#666;">${jogosComRes>0?r.pts+' pts • ✅'+r.ac:'aguardando jogos'}</div></div></div><div style="text-align:right;"><span class="ap-badge ${cls}">${badge}</span><div class="progress-bar-wrap" style="width:80px;margin-top:4px;"><div class="progress-bar" style="width:${pct}%"></div></div></div>`;
-      listaStatusRows.appendChild(row);
-    });
-  };
-  renderStatusLista('todos');
-  statusFiltros.querySelectorAll('.dash-filtro-btn').forEach(b=>b.addEventListener('click',()=>{
-    statusFiltros.querySelectorAll('.dash-filtro-btn').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');renderStatusLista(b.dataset.fst);
-  }));
-  secEl.appendChild(listaStatusRows);
-  cont.appendChild(secEl);
+  // Heat map
+  if(!bolaoAberto()&&apostadores.length>0){const hm=document.createElement('details');hm.style.marginBottom='14px';const hs=document.createElement('summary');hs.style.cssText='font-family:Bebas Neue,cursive;color:var(--amarelo);font-size:1.1rem;cursor:pointer;margin-bottom:8px;list-style:none;';hs.textContent='🔥 HEAT MAP DE APOSTAS POR JOGO';hm.appendChild(hs);const totAp=apostadores.length;GRUPOS.forEach(g=>{const gh=document.createElement('div');gh.innerHTML=`<div class="grupo-header" style="margin-top:0;margin-bottom:6px;">GRUPO ${g}</div>`;hm.appendChild(gh);JOGOS.filter(j=>j.g===g).forEach(j=>{let cntA=0,cntE=0,cntB=0;apostadores.forEach(ap=>{const v=(apostas[ap.id]||{})[j.id];if(v==='A')cntA++;else if(v==='E')cntE++;else if(v==='B')cntB++;});const tot=cntA+cntE+cntB||1;const pA=Math.round(cntA/tot*100),pE=Math.round(cntE/tot*100),pB=Math.round(cntB/tot*100);const row=document.createElement('div');row.className='heat-row';row.innerHTML=`<div class="ht-label"><strong>${j.a}</strong><br><span style="color:#888;font-size:.68rem;">${j.d}</span></div><div class="heat-bar-wrap">${pA>0?`<div class="heat-seg ha" style="flex:${pA}">${pA>15?pA+'%':''}</div>`:''} ${pE>0?`<div class="heat-seg he" style="flex:${pE}">${pE>15?pE+'%':''}</div>`:''} ${pB>0?`<div class="heat-seg hb" style="flex:${pB}">${pB>15?pB+'%':''}</div>`:''}</div><div class="heat-info"><strong>${j.b}</strong><br>${cntA}/${cntE}/${cntB}</div>`;hm.appendChild(row);});});cont.appendChild(hm);}else if(bolaoAberto()&&apostadores.length>0){const hn=document.createElement('div');hn.style.cssText='background:rgba(0,0,0,.3);border:1px dashed #333;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:.78rem;color:#555;text-align:center;';hn.textContent='🔥 Heat Map disponível após o encerramento das apostas';cont.appendChild(hn);}
 }
+
+function renderDashPagamentos(){
+  const cont=document.getElementById('dsub-pagamentos');
+  if(!cont)return;
+  cont.innerHTML='';
+  const pagos=apostadores.filter(a=>a.pago===true);
+  const pendentes=apostadores.filter(a=>!a.pago);
+  const total=apostadores.length;
+  const totalArrecadado=pagos.length*100,totalEsperado=total*100,pctPag=total>0?Math.round(pagos.length/total*100):0;
+
+  // Seção controle
+  const sec=document.createElement('div');sec.style.marginBottom='18px';
+  const titleRow=document.createElement('div');titleRow.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;';
+  titleRow.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.2rem;margin:0;">💰 CONTROLE DE PAGAMENTO</h3>`;
+  const filtros=document.createElement('div');filtros.className='dash-filtro-row';filtros.style.margin='0';
+  filtros.innerHTML=`<button class="dash-filtro-btn f-todos active" data-fpag="todos">Todos</button><button class="dash-filtro-btn f-pago" data-fpag="pago">✅ Pagos</button><button class="dash-filtro-btn f-pend" data-fpag="pend">⏳ Pendentes</button>`;
+  titleRow.appendChild(filtros);sec.appendChild(titleRow);
+
+  const kpi=document.createElement('div');kpi.className='dash-grid';kpi.style.marginBottom='12px';
+  kpi.innerHTML=`<div class="kpi-card"><div class="kpi-num" style="color:#00dd00;">${pagos.length}</div><div class="kpi-label">Pagamentos OK</div></div><div class="kpi-card"><div class="kpi-num" style="color:#ff8844;">${pendentes.length}</div><div class="kpi-label">Pendentes</div></div><div class="kpi-card"><div class="kpi-num" style="color:var(--amarelo);font-size:1.6rem;">R$${totalArrecadado}</div><div class="kpi-label">Arrecadado</div><div class="kpi-sub">de R$${totalEsperado}</div></div>`;
+  sec.appendChild(kpi);
+  const bar=document.createElement('div');bar.className='progress-bar-wrap';bar.style.cssText='margin-bottom:14px;height:12px;';bar.innerHTML=`<div class="progress-bar" style="width:${pctPag}%"></div>`;sec.appendChild(bar);
+
+  const lista=document.createElement('div');lista.id='dashPagLista2';
+  const renderLista=(filtro)=>{lista.innerHTML='';const arr=filtro==='pago'?pagos:filtro==='pend'?pendentes:apostadores;if(!arr.length){lista.innerHTML='<p style="color:#666;font-size:.82rem;text-align:center;padding:10px;">Nenhum registro.</p>';return;}arr.forEach(ap=>{const row=document.createElement('div');row.className='pag-row';const pagoParaStr=ap.pago&&ap.pagoPara?`<span class="pago-para-badge" style="margin-left:6px;">${ap.pagoPara}</span>`:'';row.innerHTML=`<div style="display:flex;align-items:center;gap:8px;"><div style="width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--verde),var(--amarelo));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#000;flex-shrink:0;">${ap.nome[0].toUpperCase()}</div><div style="font-weight:700;font-size:.85rem;">${ap.nome}${pagoParaStr}</div></div><span class="${ap.pago?'badge-pago':'badge-pendente'}">${ap.pago?'✅ PAGO':'⏳ PENDENTE'}</span>`;lista.appendChild(row);});};
+  renderLista('todos');
+  filtros.querySelectorAll('.dash-filtro-btn').forEach(b=>b.addEventListener('click',()=>{filtros.querySelectorAll('.dash-filtro-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderLista(b.dataset.fpag);}));
+  sec.appendChild(lista);cont.appendChild(sec);
+
+  // Resumo por cobrador
+  const rd=document.createElement('div');rd.style.marginBottom='14px';
+  const rTit=document.createElement('h3');rTit.style.cssText='font-family:Bebas Neue,cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:10px;';rTit.textContent='📋 RESUMO POR COBRADOR';rd.appendChild(rTit);
+  const cob={};apostadores.forEach(ap=>{if(ap.pago){const n=ap.pagoPara||'Não informado';if(!cob[n])cob[n]={total:0,nomes:[]};cob[n].total++;cob[n].nomes.push(ap.nome);}});
+  if(!Object.keys(cob).length){const p=document.createElement('p');p.style.cssText='color:#666;font-size:.82rem;text-align:center;padding:12px;';p.textContent='Marque "Pago para" em cada participante para ver o resumo.';rd.appendChild(p);}
+  else{Object.entries(cob).sort((a,b)=>b[1].total-a[1].total).forEach(([n,d])=>{const card=document.createElement('div');card.className='resumo-pag-card';card.innerHTML=`<div class="resumo-pag-row"><div><div class="resumo-pag-nome">💰 ${n}</div><div class="resumo-pag-sub">${d.nomes.slice(0,3).join(', ')}${d.nomes.length>3?' +mais...':''}</div></div><div style="text-align:right;"><div class="resumo-pag-total">R$${d.total*100}</div><div class="resumo-pag-sub">${d.total} pagamento${d.total>1?'s':''}</div></div></div>`;rd.appendChild(card);});const tot=document.createElement('div');tot.style.cssText='background:linear-gradient(135deg,rgba(184,134,11,.2),rgba(255,215,0,.1));border:1px solid #B8860B;border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;';tot.innerHTML=`<span style="font-family:Bebas Neue,cursive;color:var(--amarelo);">TOTAL ARRECADADO</span><span style="font-family:Bebas Neue,cursive;font-size:1.6rem;color:var(--amarelo);">R$${pagos.length*100}</span>`;rd.appendChild(tot);}
+  cont.appendChild(rd);
+}
+
+function renderDashStatus(){
+  const cont=document.getElementById('dsub-status');
+  if(!cont)return;
+  cont.innerHTML='';
+  const rank=calcRanking();
+  const jogosComRes=JOGOS.filter(j=>resultados[j.id]).length;
+  const sec=document.createElement('div');sec.style.marginBottom='18px';
+  const titleRow=document.createElement('div');titleRow.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;';
+  titleRow.innerHTML=`<h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.2rem;margin:0;">👤 Status por Participante</h3>`;
+  const filtros=document.createElement('div');filtros.className='dash-filtro-row';filtros.style.margin='0';
+  filtros.innerHTML=`<button class="dash-filtro-btn f-todos active" data-fst="todos">Todos</button><button class="dash-filtro-btn f-apost" data-fst="apostou">✅ Apostou</button><button class="dash-filtro-btn f-sem" data-fst="sem">❌ Sem apostas</button>`;
+  titleRow.appendChild(filtros);sec.appendChild(titleRow);
+  const lista=document.createElement('div');lista.id='dashStatusLista2';
+  const renderSt=(filtro)=>{lista.innerHTML='';const arr=apostadores.filter(ap=>{const qtd=Object.keys(apostas[ap.id]||{}).length;if(filtro==='apostou')return qtd>0;if(filtro==='sem')return qtd===0;return true;});if(!arr.length){lista.innerHTML='<p style="color:#666;font-size:.82rem;text-align:center;padding:10px;">Nenhum registro.</p>';return;}arr.forEach(ap=>{const qtd=Object.keys(apostas[ap.id]||{}).length,r=rank.find(r=>r.id===ap.id)||{pts:0,ac:0},pct=Math.round(qtd/72*100);let badge,cls;if(qtd===0){badge='Sem apostas';cls='vazio';}else if(qtd<72){badge=qtd+'/72 palpites';cls='parcial';}else{badge='✅ Completo';cls='completo';}const row=document.createElement('div');row.className='ap-status-row';row.innerHTML=`<div style="display:flex;align-items:center;gap:8px;"><div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--verde),var(--amarelo));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#000;flex-shrink:0;">${ap.nome[0].toUpperCase()}</div><div><div style="font-weight:700;font-size:.88rem;">${ap.nome}</div><div style="font-size:.7rem;color:#666;">${jogosComRes>0?r.pts+' pts • ✅'+r.ac:'aguardando jogos'}</div></div></div><div style="text-align:right;"><span class="ap-badge ${cls}">${badge}</span><div class="progress-bar-wrap" style="width:80px;margin-top:4px;"><div class="progress-bar" style="width:${pct}%"></div></div></div>`;lista.appendChild(row);});};
+  renderSt('todos');
+  filtros.querySelectorAll('.dash-filtro-btn').forEach(b=>b.addEventListener('click',()=>{filtros.querySelectorAll('.dash-filtro-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');renderSt(b.dataset.fst);}));
+  sec.appendChild(lista);cont.appendChild(sec);
+}
+
+function renderDashboard(){
+  // Renderiza só o painel ativo
+  if(dashPainelAtivo==='geral')renderDashGeral();
+  else if(dashPainelAtivo==='pagamentos')renderDashPagamentos();
+  else if(dashPainelAtivo==='status')renderDashStatus();
+}
+
 
 // COMUNICAÇÃO
 function gerarMsgBoasVindas(nome){
@@ -1545,6 +1510,9 @@ window.setEditPag = function(sim){
   editPago = sim;
   document.getElementById('editPagSim').style.opacity = sim ? '1' : '0.4';
   document.getElementById('editPagNao').style.opacity = sim ? '0.4' : '1';
+  const wrap=document.getElementById('pagParaWrap');
+  if(wrap)wrap.style.display=sim?'block':'none';
+  if(!sim){const sel=document.getElementById('editPagoPara');if(sel)sel.value='';}
 };
 
 // ===== COMUNICAÇÃO — tabs msg/img =====
@@ -1955,6 +1923,23 @@ async function toggleManut(ativo){
     if(t)t.checked=!ativo;
   }
 }
+
+// ===== SUB-ABAS DASHBOARD =====
+document.getElementById('dashSubtabs').addEventListener('click',(e)=>{
+  const btn=e.target.closest('.dash-subtab');
+  if(!btn)return;
+  document.querySelectorAll('.dash-subtab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.dash-subpanel').forEach(p=>p.classList.remove('active'));
+  const sub=btn.dataset.sub;
+  const painel=document.getElementById('dsub-'+sub);
+  if(painel)painel.classList.add('active');
+  dashPainelAtivo=sub;
+  // Renderizar o painel selecionado
+  if(sub==='geral')renderDashGeral();
+  else if(sub==='pagamentos')renderDashPagamentos();
+  else if(sub==='status')renderDashStatus();
+});
 
 // Vincular eventos de edição e comunicação (dentro do módulo)
 document.getElementById('btnEditarBV').addEventListener('click', toggleEditBV);
