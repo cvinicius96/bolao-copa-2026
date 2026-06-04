@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bolão Copa 2026 — Formulário de Apostas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d07;--card:#0d1f0d;--card2:#111f11;--border:#1a3a1a;
+  --gold:#FFD700;--orange:#FFA500;--green:#006400;--green2:#00cc66;
+  --text:#e8f0e8;--muted:#6a8a6a;--red:#ff4444;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;}
+
+/* HEADER */
+.header{background:linear-gradient(90deg,#001a00,var(--green),#001a00);padding:14px 16px;border-bottom:3px solid var(--gold);display:flex;align-items:center;justify-content:center;gap:10px;position:sticky;top:0;z-index:100;}
+.header h1{font-family:'Bebas Neue',cursive;font-size:1.4rem;color:var(--gold);letter-spacing:2px;}
+
+/* LOGIN */
+#loginBox{max-width:400px;margin:40px auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;}
+#loginBox h2{font-family:'Bebas Neue',cursive;color:var(--gold);font-size:1.6rem;letter-spacing:2px;text-align:center;margin-bottom:6px;}
+#loginBox p{color:var(--muted);font-size:.82rem;text-align:center;margin-bottom:22px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.field input, .field select{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.95rem;outline:none;}
+.field input:focus,.field select:focus{border-color:var(--gold);}
+.btn-gold{width:100%;background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;border:none;border-radius:8px;padding:13px;font-family:'Bebas Neue',cursive;font-size:1.1rem;letter-spacing:2px;cursor:pointer;margin-top:6px;}
+.btn-gold:hover{opacity:.9;}
+.err{color:var(--red);font-size:.8rem;text-align:center;margin-top:10px;display:none;}
+
+/* PROGRESSO */
+#progressoBar{display:none;background:#0a1a0a;border-bottom:1px solid var(--border);padding:10px 16px;}
+.prog-info{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.prog-nome{font-weight:700;font-size:.88rem;color:var(--gold);}
+.prog-count{font-family:'Bebas Neue',cursive;font-size:1.1rem;}
+.prog-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green2),var(--gold));transition:width .4s;}
+
+/* FORMULÁRIO */
+#formBox{display:none;max-width:600px;margin:0 auto;padding:12px 12px 80px;}
+
+.grupo-header{font-family:'Bebas Neue',cursive;font-size:1rem;color:var(--gold);letter-spacing:3px;padding:10px 12px 6px;margin-top:8px;border-bottom:1px solid var(--border);}
+
+.jogo-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;}
+.jogo-top{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px;}
+.jogo-num{font-size:.68rem;color:var(--muted);letter-spacing:1px;}
+.jogo-data{font-size:.68rem;color:var(--muted);}
+.jogo-times{display:flex;align-items:center;justify-content:center;gap:6px;padding:0 12px 10px;font-weight:700;font-size:.92rem;}
+.jogo-sep{color:var(--muted);font-size:.8rem;}
+
+/* BOTÕES DE APOSTA */
+.aposta-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:1px solid var(--border);}
+.ap-btn{padding:11px 4px;text-align:center;cursor:pointer;font-size:.75rem;font-weight:700;border:none;background:transparent;color:#666;transition:all .2s;border-right:1px solid var(--border);}
+.ap-btn:last-child{border-right:none;}
+.ap-btn:hover{background:rgba(255,255,255,.04);}
+.ap-btn.sel-A{background:rgba(0,180,80,.25);color:#00dd00;}
+.ap-btn.sel-E{background:rgba(255,215,0,.2);color:var(--gold);}
+.ap-btn.sel-B{background:rgba(0,100,200,.25);color:#66aaff;}
+.ap-btn .emoji{font-size:1rem;display:block;margin-bottom:2px;}
+
+/* BOTÃO SALVAR FIXO */
+#btnSalvarFixed{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;border:none;padding:16px;font-family:'Bebas Neue',cursive;font-size:1.2rem;letter-spacing:2px;cursor:pointer;z-index:200;display:none;box-shadow:0 -4px 20px rgba(0,0,0,.5);}
+
+/* TOAST */
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#002200;border:1px solid var(--gold);color:var(--gold);padding:10px 20px;border-radius:8px;font-size:.85rem;font-weight:700;display:none;z-index:999;white-space:nowrap;}
+#toast.err{background:#220000;border-color:var(--red);color:var(--red);}
+#toast.info{background:#001122;border-color:#4488ff;color:#88aaff;}
+
+/* LOADING */
+#loading{display:none;text-align:center;padding:40px 20px;color:var(--muted);font-size:.9rem;}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,215,0,.15);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* CONCLUÍDO */
+#concluido{display:none;max-width:400px;margin:40px auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;text-align:center;}
+#concluido h2{font-family:'Bebas Neue',cursive;color:var(--green2);font-size:1.8rem;letter-spacing:2px;margin-bottom:10px;}
+#concluido p{color:var(--muted);font-size:.88rem;line-height:1.7;}
+
+/* MOBILE */
+@media(max-width:380px){
+  .jogo-times{font-size:.82rem;}
+  .ap-btn{font-size:.7rem;padding:9px 2px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span style="font-size:1.4rem;">⚽</span>
+  <h1>BOLÃO COPA 2026</h1>
+</div>
+
+<div id="toast"></div>
+
+<!-- LOGIN -->
+<div id="loginBox">
+  <h2>PALPITES</h2>
+  <p>Entre com seu nome e senha para registrar suas apostas</p>
+  <div class="field">
+    <label>Seu nome</label>
+    <input type="text" id="inputNome" placeholder="Digite seu nome completo">
+  </div>
+  <div class="field">
+    <label>Senha</label>
+    <input type="password" id="inputSenha" placeholder="Senha fornecida pelo admin">
+  </div>
+  <button class="btn-gold" id="btnEntrar">⚽ ENTRAR E APOSTAR</button>
+  <div class="err" id="loginErr">Usuário ou senha inválidos.</div>
+</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  Carregando jogos...
+</div>
+
+<!-- PROGRESSO -->
+<div id="progressoBar">
+  <div class="prog-info">
+    <span class="prog-nome" id="progNome"></span>
+    <span class="prog-count" id="progCount" style="color:var(--gold);">0/72</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+</div>
+
+<!-- FORMULÁRIO -->
+<div id="formBox"></div>
+
+<!-- BOTÃO SALVAR FIXO -->
+<button id="btnSalvarFixed">💾 SALVAR APOSTAS</button>
+
+<!-- CONCLUÍDO -->
+<div id="concluido">
+  <div style="font-size:3rem;margin-bottom:10px;">🏆</div>
+  <h2>APOSTAS SALVAS!</h2>
+  <p id="concluidoMsg">Seus palpites foram registrados com sucesso.<br>Boa sorte no bolão!</p>
+  <button class="btn-gold" style="margin-top:20px;" onclick="location.reload()">↩️ VOLTAR</button>
+</div>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js';
+import{getFirestore,doc,getDoc,setDoc,getDocs,collection}from'https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js';
+
+const firebaseConfig={
+  apiKey:"AIzaSyAuFiU9HuE8DnYMUkDJjJgJOJ5gYMSCvoY",
+  authDomain:"bolao-copa-2026-c8130.firebaseapp.com",
+  projectId:"bolao-copa-2026-c8130",
+  storageBucket:"bolao-copa-2026-c8130.firebasestorage.app",
+  messagingSenderId:"396642101963",
+  appId:"1:396642101963:web:1434cacef759837738494e"
+};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+// =============================================
+// DATA DE FECHAMENTO
+// =============================================
+let DATA_FINAL=new Date('2026-06-08T23:59:59');
+
+// =============================================
+// JOGOS
+// =============================================
+const JOGOS=[
+  {id:'A1',g:'A',a:'México',b:'África do Sul',d:'11/06',h:'16h'},
+  {id:'A2',g:'A',a:'Coreia do Sul',b:'Rep. Tcheca',d:'11/06',h:'23h'},
+  {id:'A3',g:'A',a:'Rep. Tcheca',b:'África do Sul',d:'18/06',h:'13h'},
+  {id:'A4',g:'A',a:'México',b:'Coreia do Sul',d:'18/06',h:'22h'},
+  {id:'A5',g:'A',a:'África do Sul',b:'Coreia do Sul',d:'24/06',h:'22h'},
+  {id:'A6',g:'A',a:'Rep. Tcheca',b:'México',d:'24/06',h:'22h'},
+  {id:'B1',g:'B',a:'Canadá',b:'Bósnia',d:'12/06',h:'16h'},
+  {id:'B2',g:'B',a:'Catar',b:'Suíça',d:'13/06',h:'16h'},
+  {id:'B3',g:'B',a:'Suíça',b:'Bósnia',d:'18/06',h:'16h'},
+  {id:'B4',g:'B',a:'Canadá',b:'Catar',d:'18/06',h:'19h'},
+  {id:'B5',g:'B',a:'Suíça',b:'Canadá',d:'24/06',h:'16h'},
+  {id:'B6',g:'B',a:'Bósnia',b:'Catar',d:'24/06',h:'16h'},
+  {id:'C1',g:'C',a:'Brasil',b:'Marrocos',d:'13/06',h:'19h'},
+  {id:'C2',g:'C',a:'Haiti',b:'Escócia',d:'13/06',h:'22h'},
+  {id:'C3',g:'C',a:'Escócia',b:'Marrocos',d:'19/06',h:'19h'},
+  {id:'C4',g:'C',a:'Brasil',b:'Haiti',d:'19/06',h:'16h'},
+  {id:'C5',g:'C',a:'Marrocos',b:'Haiti',d:'24/06',h:'19h'},
+  {id:'C6',g:'C',a:'Escócia',b:'Brasil',d:'24/06',h:'19h'},
+  {id:'D1',g:'D',a:'EUA',b:'Paraguai',d:'12/06',h:'22h'},
+  {id:'D2',g:'D',a:'Austrália',b:'Turquia',d:'14/06',h:'01h'},
+  {id:'D3',g:'D',a:'EUA',b:'Austrália',d:'19/06',h:'16h'},
+  {id:'D4',g:'D',a:'Turquia',b:'Paraguai',d:'20/06',h:'01h'},
+  {id:'D5',g:'D',a:'Turquia',b:'EUA',d:'25/06',h:'23h'},
+  {id:'D6',g:'D',a:'Paraguai',b:'Austrália',d:'25/06',h:'23h'},
+  {id:'E1',g:'E',a:'Alemanha',b:'Curaçao',d:'14/06',h:'14h'},
+  {id:'E2',g:'E',a:'Costa do Marfim',b:'Equador',d:'14/06',h:'20h'},
+  {id:'E3',g:'E',a:'Alemanha',b:'Costa do Marfim',d:'20/06',h:'17h'},
+  {id:'E4',g:'E',a:'Equador',b:'Curaçao',d:'20/06',h:'21h'},
+  {id:'E5',g:'E',a:'Equador',b:'Alemanha',d:'25/06',h:'17h'},
+  {id:'E6',g:'E',a:'Curaçao',b:'Costa do Marfim',d:'25/06',h:'17h'},
+  {id:'F1',g:'F',a:'Holanda',b:'Japão',d:'14/06',h:'17h'},
+  {id:'F2',g:'F',a:'Suécia',b:'Tunísia',d:'14/06',h:'23h'},
+  {id:'F3',g:'F',a:'Holanda',b:'Suécia',d:'20/06',h:'14h'},
+  {id:'F4',g:'F',a:'Tunísia',b:'Japão',d:'21/06',h:'01h'},
+  {id:'F5',g:'F',a:'Tunísia',b:'Holanda',d:'25/06',h:'20h'},
+  {id:'F6',g:'F',a:'Japão',b:'Suécia',d:'25/06',h:'20h'},
+  {id:'G1',g:'G',a:'Bélgica',b:'Egito',d:'15/06',h:'16h'},
+  {id:'G2',g:'G',a:'Irã',b:'Nova Zelândia',d:'15/06',h:'22h'},
+  {id:'G3',g:'G',a:'Bélgica',b:'Irã',d:'21/06',h:'16h'},
+  {id:'G4',g:'G',a:'Nova Zelândia',b:'Egito',d:'21/06',h:'22h'},
+  {id:'G5',g:'G',a:'Egito',b:'Irã',d:'27/06',h:'00h'},
+  {id:'G6',g:'G',a:'Nova Zelândia',b:'Bélgica',d:'27/06',h:'00h'},
+  {id:'H1',g:'H',a:'Espanha',b:'Cabo Verde',d:'15/06',h:'13h'},
+  {id:'H2',g:'H',a:'Arábia Saudita',b:'Uruguai',d:'15/06',h:'19h'},
+  {id:'H3',g:'H',a:'Espanha',b:'Arábia Saudita',d:'21/06',h:'13h'},
+  {id:'H4',g:'H',a:'Uruguai',b:'Cabo Verde',d:'21/06',h:'19h'},
+  {id:'H5',g:'H',a:'Cabo Verde',b:'Arábia Saudita',d:'26/06',h:'21h'},
+  {id:'H6',g:'H',a:'Uruguai',b:'Espanha',d:'26/06',h:'21h'},
+  {id:'I1',g:'I',a:'França',b:'Senegal',d:'16/06',h:'16h'},
+  {id:'I2',g:'I',a:'Iraque',b:'Noruega',d:'16/06',h:'19h'},
+  {id:'I3',g:'I',a:'França',b:'Iraque',d:'22/06',h:'18h'},
+  {id:'I4',g:'I',a:'Noruega',b:'Senegal',d:'22/06',h:'21h'},
+  {id:'I5',g:'I',a:'Senegal',b:'Iraque',d:'26/06',h:'16h'},
+  {id:'I6',g:'I',a:'Noruega',b:'França',d:'26/06',h:'16h'},
+  {id:'J1',g:'J',a:'Argentina',b:'Argélia',d:'16/06',h:'22h'},
+  {id:'J2',g:'J',a:'Áustria',b:'Jordânia',d:'17/06',h:'01h'},
+  {id:'J3',g:'J',a:'Argentina',b:'Áustria',d:'22/06',h:'14h'},
+  {id:'J4',g:'J',a:'Jordânia',b:'Argélia',d:'23/06',h:'00h'},
+  {id:'J5',g:'J',a:'Jordânia',b:'Argentina',d:'27/06',h:'23h'},
+  {id:'J6',g:'J',a:'Argélia',b:'Áustria',d:'27/06',h:'23h'},
+  {id:'K1',g:'K',a:'Portugal',b:'RD Congo',d:'17/06',h:'14h'},
+  {id:'K2',g:'K',a:'Uzbequistão',b:'Colômbia',d:'17/06',h:'23h'},
+  {id:'K3',g:'K',a:'Portugal',b:'Uzbequistão',d:'23/06',h:'14h'},
+  {id:'K4',g:'K',a:'Colômbia',b:'RD Congo',d:'23/06',h:'23h'},
+  {id:'K5',g:'K',a:'RD Congo',b:'Uzbequistão',d:'27/06',h:'20h30'},
+  {id:'K6',g:'K',a:'Colômbia',b:'Portugal',d:'27/06',h:'20h30'},
+  {id:'L1',g:'L',a:'Inglaterra',b:'Croácia',d:'17/06',h:'17h'},
+  {id:'L2',g:'L',a:'Gana',b:'Panamá',d:'17/06',h:'20h'},
+  {id:'L3',g:'L',a:'Inglaterra',b:'Gana',d:'23/06',h:'17h'},
+  {id:'L4',g:'L',a:'Panamá',b:'Croácia',d:'23/06',h:'20h'},
+  {id:'L5',g:'L',a:'Croácia',b:'Gana',d:'27/06',h:'18h'},
+  {id:'L6',g:'L',a:'Panamá',b:'Inglaterra',d:'27/06',h:'18h'},
+];
+const GRUPOS=[...new Set(JOGOS.map(j=>j.g))];
+
+// =============================================
+// ESTADO
+// =============================================
+let apostador=null;
+let palpites={};// {jogoId: 'A'|'E'|'B'}
+
+function toast(msg,tipo='ok'){
+  const t=document.getElementById('toast');
+  t.className=tipo==='err'?'err':tipo==='info'?'info':'';
+  t.textContent=msg;t.style.display='block';
+  clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3000);
+}
+function atualizarProgresso(){
+  const feitos=Object.keys(palpites).length;
+  const pct=Math.round(feitos/72*100);
+  document.getElementById('progCount').textContent=feitos+'/72';
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progCount').style.color=pct===100?'#00dd00':pct>=50?'#FFD700':'#ff8844';
+}
+
+// =============================================
+// LOGIN
+// =============================================
+document.getElementById('btnEntrar').addEventListener('click', async()=>{
+  const nome=document.getElementById('inputNome').value.trim();
+  const senha=document.getElementById('inputSenha').value.trim();
+  const errEl=document.getElementById('loginErr');
+  errEl.style.display='none';
+  if(!nome||!senha){errEl.textContent='Preencha nome e senha.';errEl.style.display='block';return;}
+
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('loading').style.display='block';
+
+  try{
+    // Carregar config (data fechamento)
+    const cfg=await getDoc(doc(db,'config','bolao'));
+    if(cfg.exists()&&cfg.data().dataFinal){
+      DATA_FINAL=new Date(cfg.data().dataFinal+'T23:59:59');
+    }
+
+    // Verificar manutenção
+    const man=await getDoc(doc(db,'config','manutencao'));
+    if(man.exists()&&man.data().ativo){
+      document.getElementById('loading').style.display='none';
+      document.getElementById('loginBox').style.display='block';
+      errEl.textContent='Sistema em manutenção. Tente novamente em breve.';
+      errEl.style.display='block';
+      return;
+    }
+
+    // Verificar prazo
+    if(new Date()>DATA_FINAL){
+      document.getElementById('loading').style.display='none';
+      document.getElementById('loginBox').style.display='block';
+      errEl.textContent='Prazo encerrado. Apostas não são mais aceitas.';
+      errEl.style.display='block';
+      return;
+    }
+
+    // Buscar apostadores
+    const snap=await getDocs(collection(db,'apostadores'));
+    const apostadores=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const ap=apostadores.find(a=>a.nome.toLowerCase()===nome.toLowerCase());
+    if(!ap){
+      document.getElementById('loading').style.display='none';
+      document.getElementById('loginBox').style.display='block';
+      errEl.textContent='Nome não encontrado. Verifique com o administrador.';
+      errEl.style.display='block';
+      return;
+    }
+    const senhaEsperada=(ap.senha&&ap.senha.trim())?ap.senha.trim():'2026';
+    if(senha!==senhaEsperada){
+      document.getElementById('loading').style.display='none';
+      document.getElementById('loginBox').style.display='block';
+      errEl.textContent='Senha incorreta.';
+      errEl.style.display='block';
+      return;
+    }
+
+    apostador=ap;
+
+    // Carregar apostas existentes
+    const apostasDoc=await getDoc(doc(db,'apostas',ap.id));
+    if(apostasDoc.exists()&&apostasDoc.data().votos){
+      palpites={...apostasDoc.data().votos};
+    }
+
+    document.getElementById('loading').style.display='none';
+    iniciarFormulario();
+
+  }catch(e){
+    document.getElementById('loading').style.display='none';
+    document.getElementById('loginBox').style.display='block';
+    errEl.textContent='Erro de conexão. Verifique sua internet.';
+    errEl.style.display='block';
+    console.error(e);
+  }
+});
+
+// =============================================
+// FORMULÁRIO
+// =============================================
+function iniciarFormulario(){
+  const progBar=document.getElementById('progressoBar');
+  const formBox=document.getElementById('formBox');
+  const btnSalvar=document.getElementById('btnSalvarFixed');
+
+  document.getElementById('progNome').textContent=apostador.nome;
+  progBar.style.display='block';
+  formBox.style.display='block';
+  btnSalvar.style.display='block';
+  atualizarProgresso();
+
+  GRUPOS.forEach(g=>{
+    const ghdr=document.createElement('div');
+    ghdr.className='grupo-header';
+    ghdr.textContent='GRUPO '+g;
+    formBox.appendChild(ghdr);
+
+    JOGOS.filter(j=>j.g===g).forEach((j,idx)=>{
+      const card=document.createElement('div');
+      card.className='jogo-card';
+      card.id='jogo-'+j.id;
+
+      const top=document.createElement('div');
+      top.className='jogo-top';
+      top.innerHTML=`<span class="jogo-num">JOGO ${j.id}</span><span class="jogo-data">📅 ${j.d} • ${j.h}</span>`;
+      card.appendChild(top);
+
+      const times=document.createElement('div');
+      times.className='jogo-times';
+      times.innerHTML=`<span>${j.a}</span><span class="jogo-sep">×</span><span>${j.b}</span>`;
+      card.appendChild(times);
+
+      const btns=document.createElement('div');
+      btns.className='aposta-btns';
+
+      const ops=[
+        {val:'A',emoji:'🏆',label:j.a.length>10?j.a.substring(0,9)+'…':j.a},
+        {val:'E',emoji:'🤝',label:'Empate'},
+        {val:'B',emoji:'🏆',label:j.b.length>10?j.b.substring(0,9)+'…':j.b},
+      ];
+
+      ops.forEach(op=>{
+        const btn=document.createElement('button');
+        btn.className='ap-btn'+(palpites[j.id]===op.val?' sel-'+op.val:'');
+        btn.innerHTML=`<span class="emoji">${op.emoji}</span>${op.label}`;
+        btn.addEventListener('click',()=>{
+          palpites[j.id]=op.val;
+          // Atualizar visual dos 3 botões deste jogo
+          btns.querySelectorAll('.ap-btn').forEach((b,i)=>{
+            b.className='ap-btn'+(palpites[j.id]===ops[i].val?' sel-'+ops[i].val:'');
+          });
+          atualizarProgresso();
+          // Rolar para o próximo jogo
+          const cards=formBox.querySelectorAll('.jogo-card');
+          const current=Array.from(cards).findIndex(c=>c.id==='jogo-'+j.id);
+          if(current>=0&&current<cards.length-1){
+            setTimeout(()=>cards[current+1].scrollIntoView({behavior:'smooth',block:'center'}),150);
+          }
+        });
+        btns.appendChild(btn);
+      });
+
+      card.appendChild(btns);
+      formBox.appendChild(card);
+    });
+  });
+
+  // Botão salvar
+  btnSalvar.addEventListener('click', salvarApostas);
+}
+
+// =============================================
+// SALVAR
+// =============================================
+async function salvarApostas(){
+  const feitos=Object.keys(palpites).length;
+  if(feitos===0){toast('Faça pelo menos 1 palpite antes de salvar!','err');return;}
+
+  // Verificar prazo novamente
+  if(new Date()>DATA_FINAL){toast('Prazo encerrado! Apostas não aceitas.','err');return;}
+
+  const btn=document.getElementById('btnSalvarFixed');
+  btn.textContent='⏳ SALVANDO...';btn.disabled=true;
+
+  try{
+    await setDoc(doc(db,'apostas',apostador.id),{votos:palpites},{merge:true});
+    btn.textContent='💾 SALVAR APOSTAS';btn.disabled=false;
+
+    // Mostrar tela de conclusão
+    document.getElementById('progressoBar').style.display='none';
+    document.getElementById('formBox').style.display='none';
+    btn.style.display='none';
+
+    const total=Object.keys(palpites).length;
+    const faltam=72-total;
+    document.getElementById('concluidoMsg').innerHTML=
+      `<strong style="color:#00dd00;">${total} palpite${total>1?'s':''}</strong> salvos com sucesso!`
+      +(faltam>0?`<br><span style="color:#FFD700;">Ainda faltam ${faltam} jogo${faltam>1?'s':''}.</span><br>Volte para completar!`:'<br><span style="color:#00dd00;">Todos os 72 jogos apostados! Boa sorte! 🏆</span>');
+    document.getElementById('concluido').style.display='block';
+
+  }catch(e){
+    btn.textContent='💾 SALVAR APOSTAS';btn.disabled=false;
+    toast('Erro ao salvar. Verifique sua conexão.','err');
+    console.error(e);
+  }
+}
+
+// Enter no login
+document.getElementById('inputSenha').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btnEntrar').click();});
+document.getElementById('inputNome').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inputSenha').focus();});
+</script>
+</body>
+</html>
