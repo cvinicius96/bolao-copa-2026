@@ -2083,11 +2083,11 @@ async function renderConfiguracoes(){
 
   cont.appendChild(cardManut);
 
-  // --- ENCERRAMENTO DO BOLÃO ---
+  // --- APOSTAS ENCERRADAS ---
   const cardEnc=document.createElement('div');cardEnc.className='config-card';
   const tEnc=document.createElement('h3');
   tEnc.style.cssText='font-family:Bebas Neue,cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:14px;';
-  tEnc.textContent='🔒 ENCERRAMENTO DO BOLÃO';cardEnc.appendChild(tEnc);
+  tEnc.textContent='🔒 APOSTAS ENCERRADAS';cardEnc.appendChild(tEnc);
 
   const encStatus=document.createElement('div');
   encStatus.style.cssText=`background:${bolaoConfig.encerrado?'rgba(200,0,0,.15)':'rgba(0,100,0,.15)'};border:1px solid ${bolaoConfig.encerrado?'#880000':'#006600'};border-radius:8px;padding:12px;margin-bottom:10px;`;
