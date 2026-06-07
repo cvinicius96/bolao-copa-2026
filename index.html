@@ -723,8 +723,15 @@ const db=getFirestore(app);
 let DATA_FINAL=new Date('2026-06-08T23:59:59');
 let DATA_FINAL_STR='08/06/2026';
 function bolaoAberto(){
-  if(bolaoConfig.encerrado&&!isAdmin)return false;
+  // Encerrado pelo admin = bloqueado para todos
+  if(bolaoConfig.encerrado)return false;
+  // Prazo vencido = bloqueado para todos
   return new Date()<=DATA_FINAL;
+}
+// Admin pode editar apostas mesmo com bolão encerrado
+function apostasEditaveis(){
+  if(isAdmin)return true;
+  return bolaoAberto();
 }
 function dataFinalStr(){return DATA_FINAL_STR;}
 const SITE_URL='https://cvinicius96.github.io/bolao-copa-2026';
@@ -860,6 +867,12 @@ function iniciarSync(){
   onSnapshot(doc(db,'config','bolao'),snap=>{
     if(snap.exists()){const d=snap.data();bolaoConfig.encerrado=d.encerrado===true;bolaoConfig.palpitesVisiveis=d.palpitesVisiveis===true;if(d.dataFinal){DATA_FINAL=new Date(d.dataFinal+'T23:59:59');DATA_FINAL_STR=d.dataFinalStr||d.dataFinal;}}
     buildTabs();
+    // Re-renderizar countdowns quando estado muda
+    renderCountdown('dashCountdown');
+    renderCountdown('minhaContaCountdown');
+    // Re-renderizar dashboard se ativo
+    const tAtiva=document.querySelector('.tab.active');
+    if(tAtiva&&tAtiva.dataset.tab==='dashboard')renderDashGeral();
   });
   onSnapshot(collection(db,'apostadores'),s=>{
     apostadores=s.docs.map(d=>({id:d.id,...d.data()}));
@@ -1097,8 +1110,14 @@ document.getElementById('inputNome').addEventListener('keypress',e=>{if(e.key===
 
 // APOSTAS
 function renderApostasTab(){
-  const banner=document.getElementById('apostas-banner');const corpo=document.getElementById('apostas-corpo');const aberto=bolaoAberto();banner.innerHTML='';corpo.innerHTML='';
-  banner.innerHTML=aberto?`<div class="bolao-aberto-banner"><span style="font-size:1.5rem;">🟢</span><p>Bolão <strong>aberto</strong> para apostas até <strong>${dataFinalStr()}</strong></p></div>`:`<div class="bolao-fechado-banner"><span style="font-size:1.5rem;">🔒</span><p>Bolão <strong>encerrado</strong> em <strong>${dataFinalStr()}</strong></p></div>`;
+  const banner=document.getElementById('apostas-banner');const corpo=document.getElementById('apostas-corpo');
+  const aberto=apostasEditaveis();
+  banner.innerHTML='';corpo.innerHTML='';
+  if(bolaoConfig.encerrado){
+    banner.innerHTML=`<div class="bolao-fechado-banner"><span style="font-size:1.5rem;">🔒</span><p>Bolão <strong>encerrado definitivamente</strong>${isAdmin?' — Admin pode continuar editando':''}</p></div>`;
+  } else {
+    banner.innerHTML=aberto?`<div class="bolao-aberto-banner"><span style="font-size:1.5rem;">🟢</span><p>Bolão <strong>aberto</strong> para apostas até <strong>${dataFinalStr()}</strong></p></div>`:`<div class="bolao-fechado-banner"><span style="font-size:1.5rem;">🔒</span><p>Prazo encerrado em <strong>${dataFinalStr()}</strong></p></div>`;
+  }
   if(isAdmin){
     const lbl=document.createElement('label');lbl.style.cssText='color:#888;font-size:.83rem;display:block;margin-bottom:5px;';lbl.textContent='Selecionar apostador:';
     const sel=document.createElement('select');sel.className='sel-ap';sel.id='selApAdmin';
@@ -1210,21 +1229,21 @@ function renderRanking(){
 // COUNTDOWN helper (usado no Dashboard e Minha Conta)
 function renderCountdown(elId){
   const el=document.getElementById(elId);if(!el)return;
-  // Ocultar se bolão encerrado pelo admin OU prazo já passou
-  if(bolaoConfig.encerrado||new Date()>DATA_FINAL){
+  // Regra única: countdown só aparece se bolão NÃO encerrado pelo admin E prazo não vencido
+  // Válido para ADMIN e PARTICIPANTE igualmente
+  const deveExibir=()=>!bolaoConfig.encerrado&&new Date()<=DATA_FINAL;
+  if(!deveExibir()){
     el.innerHTML='';
     if(el._cdInt){clearInterval(el._cdInt);el._cdInt=null;}
     return;
   }
   const update=()=>{
-    // Re-verificar a cada tick
-    if(bolaoConfig.encerrado||new Date()>DATA_FINAL){
+    if(!deveExibir()){
       el.innerHTML='';
       if(el._cdInt){clearInterval(el._cdInt);el._cdInt=null;}
       return;
     }
-    const now=new Date(),diff=DATA_FINAL-now;
-    if(diff<=0){el.innerHTML='';if(el._cdInt){clearInterval(el._cdInt);el._cdInt=null;}return;}
+    const diff=DATA_FINAL-new Date();
     const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
     el.innerHTML=`<div class="countdown-wrap"><div class="countdown-title">⏱️ FECHAMENTO DAS APOSTAS — ${dataFinalStr()}</div><div class="countdown-digits"><div class="cd-unit"><div class="cd-num">${String(d).padStart(2,'0')}</div><div class="cd-lbl">Dias</div></div><div class="cd-sep">:</div><div class="cd-unit"><div class="cd-num">${String(h).padStart(2,'0')}</div><div class="cd-lbl">Horas</div></div><div class="cd-sep">:</div><div class="cd-unit"><div class="cd-num">${String(m).padStart(2,'0')}</div><div class="cd-lbl">Min</div></div><div class="cd-sep">:</div><div class="cd-unit"><div class="cd-num">${String(s).padStart(2,'0')}</div><div class="cd-lbl">Seg</div></div></div></div>`;
   };
@@ -1825,6 +1844,12 @@ function renderConfiguracoes(){
   t1.style.cssText='font-family:Bebas Neue,cursive;color:var(--amarelo);font-size:1.1rem;margin-bottom:16px;';
   t1.textContent='📅 DATA DE FECHAMENTO DAS APOSTAS';
   card1.appendChild(t1);
+  if(bolaoConfig.encerrado){
+    const encNote=document.createElement('div');
+    encNote.style.cssText='background:rgba(200,0,0,.12);border:1px solid #660000;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:.8rem;color:#ff8888;';
+    encNote.textContent='⚠️ Bolão encerrado definitivamente — data de fechamento e countdown ocultos para todos.';
+    card1.appendChild(encNote);
+  }
 
   // Label + input date
   const lbl1=document.createElement('label');
