@@ -902,9 +902,11 @@ function iniciarSync(){
     // Re-renderizar countdowns quando estado muda
     renderCountdown('dashCountdown');
     renderCountdown('minhaContaCountdown');
-    // Re-renderizar dashboard se ativo
+    // Re-renderizar aba ativa
     const tAtiva=document.querySelector('.tab.active');
     if(tAtiva&&tAtiva.dataset.tab==='dashboard')renderDashGeral();
+    if(tAtiva&&tAtiva.dataset.tab==='apostas')renderApostasTab();
+    if(tAtiva&&tAtiva.dataset.tab==='minha-conta')renderMinhaConta();
   });
   onSnapshot(collection(db,'apostadores'),s=>{
     apostadores=s.docs.map(d=>({id:d.id,...d.data()}));
@@ -1165,7 +1167,7 @@ function renderApostasTab(){
     if(!ap){corpo.innerHTML='<p style="color:#888;">Conta não encontrada.</p>';return;}
 
     // Seletor: Minha Aposta + outros (se palpitesVisiveis ou bolão encerrado)
-    const mostrarOutros=bolaoConfig.palpitesVisiveis||!bolaoAberto();
+    const mostrarOutros=bolaoConfig.palpitesVisiveis||bolaoConfig.encerrado||!bolaoAberto();
     if(mostrarOutros&&apostadores.length>0){
       const selWrap=document.createElement('div');selWrap.style.cssText='margin-bottom:14px;';
       const selLbl=document.createElement('label');selLbl.style.cssText='display:block;font-size:.75rem;color:#888;margin-bottom:5px;';selLbl.textContent='Visualizar apostas de:';
@@ -1937,7 +1939,7 @@ async function salvarConfig(){
   if(!dataVal){statusEl.style.color='#ff6666';statusEl.textContent='⚠️ Selecione uma data válida.';return;}
   statusEl.style.color='#888';statusEl.textContent='Salvando...';
   try{
-    await fbSet('config','bolao',{dataFinal:dataVal,dataFinalStr:dataStr},false);
+    await fbSet('config','bolao',{dataFinal:dataVal,dataFinalStr:dataStr});
     DATA_FINAL=new Date(dataVal+'T23:59:59');
     DATA_FINAL_STR=dataStr||dataVal;
     statusEl.style.color='#00dd00';
@@ -2088,7 +2090,7 @@ function renderConfiguracoes(){
     if(!confirm(msg))return;
     try{
       const novoEstado=!bolaoConfig.encerrado;
-      await fbSet('config','bolao',{encerrado:novoEstado},false);
+      await fbSet('config','bolao',{encerrado:novoEstado});
       bolaoConfig.encerrado=novoEstado;
       toast(novoEstado?'🔒 Bolão encerrado!':'🟢 Bolão reaberto!','ok');
       renderConfiguracoes();
@@ -2121,7 +2123,7 @@ function renderConfiguracoes(){
 
   palpChk.addEventListener('change',async()=>{
     try{
-      await fbSet('config','bolao',{palpitesVisiveis:palpChk.checked},false);
+      await fbSet('config','bolao',{palpitesVisiveis:palpChk.checked});
       bolaoConfig.palpitesVisiveis=palpChk.checked;
       palpDesc.textContent=palpChk.checked?'✅ Aba "Palpites" visível para todos os participantes':'❌ Somente admin vê os palpites dos outros';
       toast(palpChk.checked?'👀 Palpites liberados para todos!':'🔒 Palpites ocultados','ok');
