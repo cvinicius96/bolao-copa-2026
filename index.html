@@ -979,6 +979,8 @@ function startApp(){
   buildTabs();renderJogos();renderApostadores();renderApostasTab();renderResultados();renderRanking();
   iniciarSync();
   iniciarPresenca();
+  // Forçar atualização do badge após 1s (garante que isAdmin já está definido)
+  setTimeout(atualizarIndicadorOnline, 1000);
   openTab(isAdmin?'dashboard':'minha-conta');
 }
 
@@ -1872,17 +1874,17 @@ function atualizarIndicadorOnline(){
   const total=Object.keys(onlineUsuarios).length;
   const topbar=document.getElementById('topbarOnline');
   const count=document.getElementById('topbarOnlineCount');
-  if(!topbar)return;
-  // Mostrar só para admin
-  if(isAdmin&&total>0){
-    topbar.style.display='flex';
+  if(!topbar||!count)return;
+  if(isAdmin){
+    topbar.style.cssText='display:flex!important;align-items:center;gap:5px;font-size:.72rem;color:#00cc66;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(0,200,80,.1);border:1px solid #006633;';
     count.textContent=total;
+    topbar.title='Ver usuários online';
   } else {
     topbar.style.display='none';
   }
   // Atualizar modal se aberto
   const modal=document.getElementById('onlineModal');
-  if(modal&&modal.style.display!=='none')renderOnlineModal();
+  if(modal&&modal.style.display==='flex')renderOnlineModal();
 }
 
 window.abrirModalOnline=function(){
