@@ -532,6 +532,10 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
   <div class="topbar">
     <h1>⚽ BOLÃO COPA 2026</h1>
     <div class="topbar-right">
+      <div id="topbarOnline" style="display:none;align-items:center;gap:5px;font-size:.72rem;color:#00cc66;cursor:pointer;padding:4px 10px;border-radius:12px;background:rgba(0,200,80,.1);border:1px solid #006633;" onclick="window.abrirModalOnline()">
+        <div style="width:7px;height:7px;border-radius:50%;background:#00cc66;animation:pulse-green .8s infinite;flex-shrink:0;"></div>
+        <span id="topbarOnlineCount">0</span> online
+      </div>
       <span class="user-badge" id="userBadge"></span>
       <button class="btn-logout" id="btnLogout">Sair</button>
     </div>
@@ -1875,14 +1879,12 @@ function atualizarIndicadorOnline(){
   const topbar=document.getElementById('topbarOnline');
   const count=document.getElementById('topbarOnlineCount');
   if(!topbar||!count)return;
-  if(isAdmin){
-    topbar.style.cssText='display:flex!important;align-items:center;gap:5px;font-size:.72rem;color:#00cc66;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(0,200,80,.1);border:1px solid #006633;';
+  if(isAdmin&&total>0){
+    topbar.style.display='flex';
     count.textContent=total;
-    topbar.title='Ver usuários online';
   } else {
     topbar.style.display='none';
   }
-  // Atualizar modal se aberto
   const modal=document.getElementById('onlineModal');
   if(modal&&modal.style.display==='flex')renderOnlineModal();
 }
