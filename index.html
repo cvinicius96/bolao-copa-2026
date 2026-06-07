@@ -902,11 +902,15 @@ function iniciarSync(){
     // Re-renderizar countdowns quando estado muda
     renderCountdown('dashCountdown');
     renderCountdown('minhaContaCountdown');
-    // Re-renderizar aba ativa
+    // Re-renderizar aba ativa com novos valores
     const tAtiva=document.querySelector('.tab.active');
-    if(tAtiva&&tAtiva.dataset.tab==='dashboard')renderDashGeral();
-    if(tAtiva&&tAtiva.dataset.tab==='apostas')renderApostasTab();
-    if(tAtiva&&tAtiva.dataset.tab==='minha-conta')renderMinhaConta();
+    if(tAtiva){
+      const tab=tAtiva.dataset.tab;
+      if(tab==='dashboard')renderDashGeral();
+      if(tab==='apostas')renderApostasTab();
+      if(tab==='minha-conta')renderMinhaConta();
+      if(tab==='configuracoes')renderConfiguracoes();
+    }
   });
   onSnapshot(collection(db,'apostadores'),s=>{
     apostadores=s.docs.map(d=>({id:d.id,...d.data()}));
@@ -1005,7 +1009,7 @@ function openTab(id){
   if(id==='apostas')renderApostasTab();
   if(id==='dashboard')renderDashboard();
   if(id==='comunicacao')renderComunicacao();
-  if(id==='configuracoes')renderConfiguracoes();
+  if(id==='configuracoes'){renderConfiguracoes();}
   if(id==='classificacao')renderClassificacao();
   if(id==='palpites-grupo')renderPalpitesGrupo();
 }
@@ -1953,9 +1957,18 @@ async function salvarConfig(){
 }
 
 
-function renderConfiguracoes(){
+async function renderConfiguracoes(){
   const cont=document.getElementById('configConteudo');
   if(!cont)return;
+  // Sempre buscar config atualizado do Firebase antes de renderizar
+  try{
+    const cfg=await fbGet('config','bolao');
+    if(cfg){
+      bolaoConfig.encerrado=cfg.encerrado===true;
+      bolaoConfig.palpitesVisiveis=cfg.palpitesVisiveis===true;
+      if(cfg.dataFinal){DATA_FINAL=new Date(cfg.dataFinal+'T23:59:59');DATA_FINAL_STR=cfg.dataFinalStr||cfg.dataFinal;}
+    }
+  }catch(e){console.warn('Config load:',e);}
   cont.innerHTML='';
 
   // --- DATA DE FECHAMENTO ---
