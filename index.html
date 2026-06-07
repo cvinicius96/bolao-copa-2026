@@ -1109,8 +1109,33 @@ function renderApostasTab(){
   } else {
     const ap=apostadores.find(a=>a.nome.toLowerCase()===currentUser.toLowerCase());
     if(!ap){corpo.innerHTML='<p style="color:#888;">Conta não encontrada.</p>';return;}
-    const info=document.createElement('div');info.style.cssText='background:rgba(0,80,160,.12);border:1px solid #004499;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.83rem;color:#88aaff;';info.textContent='ℹ️ As apostas são preenchidas pelo administrador. Aqui você acompanha seus palpites.';corpo.appendChild(info);
-    renderApostasForm(ap.id,apostas[ap.id]||{},corpo,false);
+
+    // Seletor: Minha Aposta + outros (se palpitesVisiveis ou bolão encerrado)
+    const mostrarOutros=bolaoConfig.palpitesVisiveis||!bolaoAberto();
+    if(mostrarOutros&&apostadores.length>0){
+      const selWrap=document.createElement('div');selWrap.style.cssText='margin-bottom:14px;';
+      const selLbl=document.createElement('label');selLbl.style.cssText='display:block;font-size:.75rem;color:#888;margin-bottom:5px;';selLbl.textContent='Visualizar apostas de:';
+      const sel=document.createElement('select');sel.className='sel-filtro';sel.style.width='100%';
+      // Primeira opção: minha aposta
+      const optMinha=document.createElement('option');optMinha.value=ap.id;optMinha.textContent='⭐ Minha Aposta ('+ap.nome+')';sel.appendChild(optMinha);
+      // Separador visual
+      const optSep=document.createElement('option');optSep.disabled=true;optSep.textContent='── Outros participantes ──';sel.appendChild(optSep);
+      // Demais participantes
+      apostadores.filter(a=>a.id!==ap.id).sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(a=>{
+        const o=document.createElement('option');o.value=a.id;o.textContent=a.nome;sel.appendChild(o);
+      });
+      selWrap.appendChild(selLbl);selWrap.appendChild(sel);corpo.appendChild(selWrap);
+      const listaSelDiv=document.createElement('div');listaSelDiv.id='listaApostasParticipante';corpo.appendChild(listaSelDiv);
+      // Renderizar minha aposta por padrão
+      renderApostasForm(ap.id,apostas[ap.id]||{},listaSelDiv,false);
+      sel.addEventListener('change',()=>{
+        listaSelDiv.innerHTML='';
+        renderApostasForm(sel.value,apostas[sel.value]||{},listaSelDiv,false);
+      });
+    } else {
+      const info=document.createElement('div');info.style.cssText='background:rgba(0,80,160,.12);border:1px solid #004499;border-radius:10px;padding:12px 14px;margin-bottom:14px;font-size:.83rem;color:#88aaff;';info.textContent='ℹ️ As apostas são preenchidas pelo administrador. Aqui você acompanha seus palpites.';corpo.appendChild(info);
+      renderApostasForm(ap.id,apostas[ap.id]||{},corpo,false);
+    }
   }
 }
 function renderApostasForm(apId,dados,container,aberto){
@@ -1185,9 +1210,21 @@ function renderRanking(){
 // COUNTDOWN helper (usado no Dashboard e Minha Conta)
 function renderCountdown(elId){
   const el=document.getElementById(elId);if(!el)return;
+  // Ocultar se bolão encerrado pelo admin OU prazo já passou
+  if(bolaoConfig.encerrado||new Date()>DATA_FINAL){
+    el.innerHTML='';
+    if(el._cdInt){clearInterval(el._cdInt);el._cdInt=null;}
+    return;
+  }
   const update=()=>{
+    // Re-verificar a cada tick
+    if(bolaoConfig.encerrado||new Date()>DATA_FINAL){
+      el.innerHTML='';
+      if(el._cdInt){clearInterval(el._cdInt);el._cdInt=null;}
+      return;
+    }
     const now=new Date(),diff=DATA_FINAL-now;
-    if(diff<=0){el.innerHTML='<div class="countdown-wrap"><div class="countdown-encerrado">🔒 APOSTAS ENCERRADAS</div></div>';return;}
+    if(diff<=0){el.innerHTML='';if(el._cdInt){clearInterval(el._cdInt);el._cdInt=null;}return;}
     const d=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000),m=Math.floor((diff%3600000)/60000),s=Math.floor((diff%60000)/1000);
     el.innerHTML=`<div class="countdown-wrap"><div class="countdown-title">⏱️ FECHAMENTO DAS APOSTAS — ${dataFinalStr()}</div><div class="countdown-digits"><div class="cd-unit"><div class="cd-num">${String(d).padStart(2,'0')}</div><div class="cd-lbl">Dias</div></div><div class="cd-sep">:</div><div class="cd-unit"><div class="cd-num">${String(h).padStart(2,'0')}</div><div class="cd-lbl">Horas</div></div><div class="cd-sep">:</div><div class="cd-unit"><div class="cd-num">${String(m).padStart(2,'0')}</div><div class="cd-lbl">Min</div></div><div class="cd-sep">:</div><div class="cd-unit"><div class="cd-num">${String(s).padStart(2,'0')}</div><div class="cd-lbl">Seg</div></div></div></div>`;
   };
