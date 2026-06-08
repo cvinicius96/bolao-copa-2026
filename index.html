@@ -434,6 +434,44 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
 /* Indicador no topbar */
 .topbar-online{display:flex;align-items:center;gap:5px;font-size:.72rem;color:#00cc66;cursor:pointer;padding:4px 8px;border-radius:12px;background:rgba(0,200,80,.1);border:1px solid #006633;}
 .topbar-online .dot{width:6px;height:6px;border-radius:50%;background:#00cc66;animation:pulse-green .8s infinite;}
+
+/* ESTATÍSTICAS */
+.stats-section{margin-bottom:20px;}
+.stats-section-title{font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1rem;letter-spacing:2px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.stat-jogo-card{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.stat-jogo-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:4px;}
+.stat-jogo-nome{font-weight:700;font-size:.85rem;}
+.stat-jogo-info{font-size:.7rem;color:#888;}
+.stat-bar-row{display:grid;grid-template-columns:1fr auto 1fr;gap:4px;align-items:center;margin-bottom:4px;}
+.stat-bar-wrap{height:22px;border-radius:4px;overflow:hidden;background:var(--border);}
+.stat-bar-fill{height:100%;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:700;color:#fff;transition:width .4s;min-width:0;}
+.stat-bar-fill.fA{background:linear-gradient(90deg,#006622,#00aa44);}
+.stat-bar-fill.fE{background:linear-gradient(90deg,#664400,#aa7700);}
+.stat-bar-fill.fB{background:linear-gradient(90deg,#002266,#0044aa);}
+.stat-center-label{text-align:center;font-size:.72rem;color:#888;font-weight:700;white-space:nowrap;}
+.stat-team{font-size:.75rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-team.left{text-align:right;color:#00cc66;}
+.stat-team.right{text-align:left;color:#4488ff;}
+.stat-team.emp{text-align:center;color:#FFD700;}
+.stat-num-row{display:flex;gap:4px;margin-top:4px;}
+.stat-pill{flex:1;text-align:center;padding:4px;border-radius:6px;font-size:.72rem;}
+.stat-pill.pA{background:rgba(0,180,80,.15);color:#00cc66;border:1px solid #006633;}
+.stat-pill.pE{background:rgba(255,215,0,.15);color:#FFD700;border:1px solid #664400;}
+.stat-pill.pB{background:rgba(68,136,255,.15);color:#88aaff;border:1px solid #223366;}
+.kpi-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px;}
+.kpi-stat{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.kpi-stat-num{font-family:'Bebas Neue',cursive;font-size:1.8rem;line-height:1;}
+.kpi-stat-lbl{font-size:.68rem;color:#888;margin-top:3px;letter-spacing:.5px;text-transform:uppercase;}
+.kpi-stat-sub{font-size:.65rem;color:#555;margin-top:2px;}
+.ranking-stat-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--card2);border-radius:8px;margin-bottom:5px;}
+.ranking-stat-pos{font-family:'Bebas Neue',cursive;font-size:1.1rem;min-width:28px;text-align:center;color:#888;}
+.ranking-stat-nome{flex:1;font-weight:700;font-size:.85rem;}
+.ranking-stat-bar{flex:2;height:8px;border-radius:4px;background:var(--border);overflow:hidden;}
+.ranking-stat-fill{height:100%;border-radius:4px;}
+.ranking-stat-val{font-family:'Bebas Neue',cursive;font-size:.95rem;min-width:36px;text-align:right;}
+.stat-filtro-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+.stat-filtro-btn{padding:5px 12px;border-radius:16px;border:1px solid var(--border);background:transparent;color:#666;cursor:pointer;font-size:.72rem;font-weight:700;transition:all .2s;}
+.stat-filtro-btn.active{background:var(--verde);color:var(--amarelo);border-color:var(--verde);}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:#050f05;}
 ::-webkit-scrollbar-thumb{background:var(--verde);border-radius:3px;}
@@ -608,10 +646,12 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
       <p class="section-sub">Visão geral do bolão em tempo real</p>
       <div class="dash-subtabs" id="dashSubtabs">
         <div class="dash-subtab active" data-sub="geral">📊 Geral</div>
+        <div class="dash-subtab" data-sub="estatisticas">📈 Estatísticas</div>
         <div class="dash-subtab" data-sub="pagamentos">💰 Pagamentos</div>
         <div class="dash-subtab" data-sub="status">👤 Status</div>
       </div>
       <div class="dash-subpanel active" id="dsub-geral"></div>
+      <div class="dash-subpanel" id="dsub-estatisticas"></div>
       <div class="dash-subpanel" id="dsub-pagamentos"></div>
       <div class="dash-subpanel" id="dsub-status"></div>
     </div>
@@ -906,7 +946,7 @@ function iniciarSync(){
     const tAtiva=document.querySelector('.tab.active');
     if(tAtiva){
       const tab=tAtiva.dataset.tab;
-      if(tab==='dashboard')renderDashGeral();
+      if(tab==='dashboard'){if(dashPainelAtivo==='estatisticas')renderDashEstatisticas();else renderDashGeral();}
       if(tab==='apostas')renderApostasTab();
       if(tab==='minha-conta')renderMinhaConta();
       if(tab==='configuracoes')renderConfiguracoes();
@@ -1397,8 +1437,8 @@ function renderDashStatus(){
 }
 
 function renderDashboard(){
-  // Renderiza só o painel ativo
   if(dashPainelAtivo==='geral')renderDashGeral();
+  else if(dashPainelAtivo==='estatisticas')renderDashEstatisticas();
   else if(dashPainelAtivo==='pagamentos')renderDashPagamentos();
   else if(dashPainelAtivo==='status')renderDashStatus();
 }
@@ -1843,6 +1883,233 @@ async function exportarBackup(){
 }
 
 // ===== PRESENÇA ONLINE (Realtime Database) =====
+// ===== DASHBOARD — ESTATÍSTICAS =====
+function renderDashEstatisticas(){
+  const cont=document.getElementById('dsub-estatisticas');
+  if(!cont)return;
+  cont.innerHTML='';
+  const total=apostadores.length;
+  if(!total){cont.innerHTML='<p style="color:#666;text-align:center;padding:20px;">Nenhum apostador cadastrado.</p>';return;}
+  const jogosComRes=JOGOS.filter(j=>resultados[j.id]).length;
+  const totalPalpites=apostadores.reduce((s,ap)=>s+Object.keys(apostas[ap.id]||{}).length,0);
+  const maxPossivel=total*72;
+  const pctPreenchimento=maxPossivel>0?Math.round(totalPalpites/maxPossivel*100):0;
+  const rank=calcRanking();
+  let totalA=0,totalE=0,totalB=0;
+  JOGOS.forEach(j=>{apostadores.forEach(ap=>{const v=(apostas[ap.id]||{})[j.id];if(v==='A')totalA++;else if(v==='E')totalE++;else if(v==='B')totalB++;});});
+  const totVotos=totalA+totalE+totalB||1;
+
+  // Jogo mais disputado e mais concentrado
+  let jogoMaisDisputado=null,menorConc=100,jogoMaisConcentrado=null,maiorConc=0;
+  JOGOS.forEach(j=>{let cA=0,cE=0,cB=0,tot=0;apostadores.forEach(ap=>{const v=(apostas[ap.id]||{})[j.id];if(v){tot++;if(v==='A')cA++;else if(v==='E')cE++;else cB++;}});if(tot<3)return;const mx=Math.max(cA,cE,cB)/tot*100;if(mx<menorConc){menorConc=mx;jogoMaisDisputado=j;}if(mx>maiorConc){maiorConc=mx;jogoMaisConcentrado=j;}});
+
+  // Participante mais ousado
+  const div={};apostadores.forEach(ap=>{div[ap.id]=0;JOGOS.forEach(j=>{let cA=0,cE=0,cB=0;apostadores.forEach(a=>{const v=(apostas[a.id]||{})[j.id];if(v==='A')cA++;else if(v==='E')cE++;else cB++;});const voto=(apostas[ap.id]||{})[j.id];if(!voto)return;const maxV=['A','E','B'][[cA,cE,cB].indexOf(Math.max(cA,cE,cB))];if(voto!==maxV)div[ap.id]++;});});
+  const comApostas=apostadores.filter(a=>Object.keys(apostas[a.id]||{}).length>0);
+  const maisOusado=comApostas.length?comApostas.slice().sort((a,b)=>div[b.id]-div[a.id])[0]:null;
+  const maisConservador=comApostas.length?comApostas.slice().sort((a,b)=>div[a.id]-div[b.id])[0]:null;
+
+  // KPIs
+  const kpiDiv=document.createElement('div');kpiDiv.className='kpi-stat-grid';
+  [[totalPalpites.toLocaleString(),'var(--amarelo)','Total de Palpites','de '+maxPossivel.toLocaleString()+' possíveis'],[pctPreenchimento+'%','#00cc66','Preenchimento','do bolão'],[Math.round(totalA/totVotos*100)+'%','#00cc66','Vitória Casa','tendência geral'],[Math.round(totalE/totVotos*100)+'%','#FFD700','Empates','tendência geral'],[Math.round(totalB/totVotos*100)+'%','#4488ff','Vitória Visitante','tendência geral'],[String(jogosComRes),'#bb88ff','Com Resultado','de 72 jogos']].forEach(([val,cor,lbl,sub])=>{const k=document.createElement('div');k.className='kpi-stat';k.innerHTML='<div class="kpi-stat-num" style="color:'+cor+';">'+val+'</div><div class="kpi-stat-lbl">'+lbl+'</div><div class="kpi-stat-sub">'+sub+'</div>';kpiDiv.appendChild(k);});
+  cont.appendChild(kpiDiv);
+
+  // Curiosidades
+  if(jogoMaisDisputado||maisOusado){
+    const curio=document.createElement('div');curio.className='stats-section';
+    const ct=document.createElement('div');ct.className='stats-section-title';ct.textContent='💡 CURIOSIDADES DO BOLÃO';curio.appendChild(ct);
+    const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;';
+    const addC=(icon,titulo,val,sub,cor)=>{const b=document.createElement('div');b.style.cssText='background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;border-left:3px solid '+cor+';';b.innerHTML='<div style="font-size:.7rem;color:#888;margin-bottom:4px;">'+icon+' '+titulo+'</div><div style="font-weight:700;font-size:.88rem;color:'+cor+';">'+val+'</div>'+(sub?'<div style="font-size:.7rem;color:#555;margin-top:2px;">'+sub+'</div>':'');grid.appendChild(b);};
+    if(jogoMaisDisputado)addC('⚔️','Jogo mais disputado',jogoMaisDisputado.a+' x '+jogoMaisDisputado.b,'Grupo '+jogoMaisDisputado.g+' • Maior divergência','#ff8844');
+    if(jogoMaisConcentrado)addC('🎯','Mais consenso',jogoMaisConcentrado.a+' x '+jogoMaisConcentrado.b,Math.round(maiorConc)+'% votaram igual','#00cc66');
+    if(maisOusado)addC('🦁','Mais ousado',maisOusado.nome,div[maisOusado.id]+' palpites contra a maioria','#ff4444');
+    if(maisConservador&&maisConservador.id!==maisOusado?.id)addC('🛡️','Mais conservador',maisConservador.nome,div[maisConservador.id]+' palpites contra a maioria','#4488ff');
+    curio.appendChild(grid);cont.appendChild(curio);
+  }
+
+  // ---- ANÁLISES DINÂMICAS ----
+  const analSection=document.createElement('div');analSection.className='stats-section';
+  const at=document.createElement('div');at.className='stats-section-title';at.textContent='🔍 ANÁLISES DINÂMICAS';analSection.appendChild(at);
+
+  // Tabs de análise
+  const analTabs=document.createElement('div');analTabs.style.cssText='display:flex;gap:0;margin-bottom:14px;border-radius:8px;overflow:hidden;border:1px solid var(--border);';
+  const analPanels={};
+  const analDefs=[
+    ['palpites','⚽ Por Jogo'],
+    ['selecao','🏆 Por Seleção'],
+    ['participante','👤 Por Participante'],
+    ['tendencia','📊 Tendências'],
+  ];
+  let analAtiva='palpites';
+  analDefs.forEach(([id,lbl])=>{
+    const btn=document.createElement('button');
+    btn.style.cssText='flex:1;padding:9px 4px;text-align:center;cursor:pointer;font-family:Bebas Neue,cursive;font-size:.75rem;letter-spacing:.5px;border:none;transition:all .2s;white-space:nowrap;';
+    btn.style.background=id==='palpites'?'var(--verde)':'transparent';
+    btn.style.color=id==='palpites'?'var(--amarelo)':'#555';
+    btn.dataset.anal=id;
+    btn.textContent=lbl;
+    analTabs.appendChild(btn);
+    const panel=document.createElement('div');
+    panel.id='anal-'+id;
+    panel.style.display=id==='palpites'?'block':'none';
+    analPanels[id]=panel;
+  });
+  analSection.appendChild(analTabs);
+  Object.values(analPanels).forEach(p=>analSection.appendChild(p));
+
+  // ── PAINEL 1: Por Jogo (com filtro grupo + data) ──
+  const p1=analPanels['palpites'];
+  // Filtros modo
+  const modoRow=document.createElement('div');modoRow.style.cssText='display:flex;gap:6px;margin-bottom:8px;';
+  const btnModoGrp=document.createElement('button');btnModoGrp.textContent='🏟️ Por Grupo';btnModoGrp.className='stat-filtro-btn active';
+  const btnModoData=document.createElement('button');btnModoData.textContent='📅 Por Data';btnModoData.className='stat-filtro-btn';
+  modoRow.appendChild(btnModoGrp);modoRow.appendChild(btnModoData);p1.appendChild(modoRow);
+  // Seletor
+  const selWrap=document.createElement('div');selWrap.style.cssText='display:flex;align-items:center;gap:8px;margin-bottom:10px;';
+  const selLbl=document.createElement('label');selLbl.style.cssText='font-size:.75rem;color:#888;white-space:nowrap;';selLbl.textContent='Grupo:';
+  const selJogoFiltro=document.createElement('select');selJogoFiltro.className='sel-filtro';selJogoFiltro.style.flex='1';
+  selWrap.appendChild(selLbl);selWrap.appendChild(selJogoFiltro);p1.appendChild(selWrap);
+  const jogosListaDiv=document.createElement('div');p1.appendChild(jogosListaDiv);
+
+  let modoJogoAtivo='grupo';
+  function populaSelJogo(){
+    selJogoFiltro.innerHTML='';
+    if(modoJogoAtivo==='grupo'){
+      selLbl.textContent='Grupo:';
+      [['TODOS','Todos os Grupos'],...GRUPOS.map(g=>['G:'+g,'Grupo '+g])].forEach(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;selJogoFiltro.appendChild(o);});
+    } else {
+      selLbl.textContent='Data:';
+      const datas=getDatas();
+      [['TODOS','Todas as Datas'],...datas.map(d=>['D:'+d,'📅 '+d])].forEach(([v,l])=>{const o=document.createElement('option');o.value=v;o.textContent=l;selJogoFiltro.appendChild(o);});
+    }
+  }
+  function renderStatJogos(filtro){
+    jogosListaDiv.innerHTML='';
+    let lista;
+    if(filtro==='TODOS')lista=JOGOS;
+    else if(filtro.startsWith('G:'))lista=JOGOS.filter(j=>j.g===filtro.slice(2));
+    else if(filtro.startsWith('D:'))lista=JOGOS.filter(j=>j.d===filtro.slice(2)).sort((a,b)=>a.g.localeCompare(b.g));
+    else lista=JOGOS;
+    if(!lista.length){jogosListaDiv.innerHTML='<p style="color:#666;text-align:center;padding:10px;">Nenhum jogo neste filtro.</p>';return;}
+    lista.forEach(j=>{
+      let cA=0,cE=0,cB=0,sem=0;apostadores.forEach(ap=>{const v=(apostas[ap.id]||{})[j.id];if(v==='A')cA++;else if(v==='E')cE++;else if(v==='B')cB++;else sem++;});
+      const tot=cA+cE+cB||1;const pA=Math.round(cA/tot*100),pE=Math.round(cE/tot*100),pB=Math.round(cB/tot*100);
+      const res=resultados[j.id];
+      const resCorA=res?res==='A'?'#00cc66':res==='E'?'#FFD700':'#4488ff':'';
+      const card=document.createElement('div');card.className='stat-jogo-card';
+      card.innerHTML='<div class="stat-jogo-header"><span class="stat-jogo-nome">'+j.a+' × '+j.b+'</span><span class="stat-jogo-info">Gr.'+j.g+' • '+j.d+(res?' • <strong style="color:'+resCorA+'">'+(res==='A'?j.a:res==='E'?'Empate':j.b)+'</strong>':' • sem resultado')+'</span></div>'
+        +'<div class="stat-bar-row"><div style="font-size:.72rem;font-weight:700;color:#00cc66;text-align:right;min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+j.a+'</div><div style="font-size:.65rem;color:#888;text-align:center;padding:0 4px;white-space:nowrap;">Empate</div><div style="font-size:.72rem;font-weight:700;color:#4488ff;min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+j.b+'</div></div>'
+        +'<div class="stat-bar-row"><div class="stat-bar-wrap"><div class="stat-bar-fill fA" style="width:'+pA+'%;justify-content:flex-end;padding-right:4px;">'+(pA>12?pA+'%':'')+'</div></div><div class="stat-center-label">'+(sem>0?sem+' s/v':'')+'</div><div class="stat-bar-wrap"><div class="stat-bar-fill fB" style="width:'+pB+'%;">'+(pB>12?pB+'%':'')+'</div></div></div>'
+        +'<div class="stat-num-row"><div class="stat-pill pA"><strong>'+cA+'</strong> ('+pA+'%)</div><div class="stat-pill pE"><strong>'+cE+'</strong> ('+pE+'%)</div><div class="stat-pill pB"><strong>'+cB+'</strong> ('+pB+'%)</div></div>';
+      jogosListaDiv.appendChild(card);
+    });
+  }
+  populaSelJogo();renderStatJogos('TODOS');
+  selJogoFiltro.addEventListener('change',()=>renderStatJogos(selJogoFiltro.value));
+  btnModoGrp.addEventListener('click',()=>{modoJogoAtivo='grupo';btnModoGrp.className='stat-filtro-btn active';btnModoData.className='stat-filtro-btn';populaSelJogo();renderStatJogos('TODOS');});
+  btnModoData.addEventListener('click',()=>{modoJogoAtivo='data';btnModoData.className='stat-filtro-btn active';btnModoGrp.className='stat-filtro-btn';populaSelJogo();renderStatJogos('TODOS');});
+
+  // ── PAINEL 2: Por Seleção ──
+  const p2=analPanels['selecao'];
+  const selData={};
+  JOGOS.forEach(j=>{
+    [j.a,j.b].forEach(time=>{
+      if(!selData[time])selData[time]={nome:time,favorito:0,azarao:0,empate:0,total:0};
+    });
+    apostadores.forEach(ap=>{
+      const v=(apostas[ap.id]||{})[j.id];
+      if(v==='A'){selData[j.a].favorito++;selData[j.a].total++;selData[j.b].azarao++;selData[j.b].total++;}
+      else if(v==='B'){selData[j.b].favorito++;selData[j.b].total++;selData[j.a].azarao++;selData[j.a].total++;}
+      else if(v==='E'){selData[j.a].empate++;selData[j.a].total++;selData[j.b].empate++;selData[j.b].total++;}
+    });
+  });
+  const selOrdenada=Object.values(selData).filter(s=>s.total>0).sort((a,b)=>b.favorito-a.favorito);
+  if(selOrdenada.length){
+    const selT=document.createElement('p');selT.style.cssText='font-size:.75rem;color:#888;margin-bottom:10px;';selT.textContent='Quantas vezes cada seleção foi apostada para vencer:';p2.appendChild(selT);
+    const maxFav=selOrdenada[0]?.favorito||1;
+    selOrdenada.slice(0,20).forEach((s,i)=>{
+      const row=document.createElement('div');row.className='ranking-stat-row';
+      const pct=Math.round(s.favorito/maxFav*100);
+      row.innerHTML='<div class="ranking-stat-pos" style="font-size:.8rem;">'+(i+1)+'</div><div class="ranking-stat-nome">'+s.nome+'</div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+pct+'%;background:linear-gradient(90deg,#006622,#00cc66);"></div></div><div style="text-align:right;min-width:100px;"><div style="font-size:.82rem;font-weight:700;color:#00cc66;">'+s.favorito+'x vencer</div><div style="font-size:.65rem;color:#888;">'+s.empate+'x empate</div></div>';
+      p2.appendChild(row);
+    });
+  } else {p2.innerHTML='<p style="color:#666;text-align:center;padding:10px;">Sem dados.</p>';}
+
+  // ── PAINEL 3: Por Participante ──
+  const p3=analPanels['participante'];
+  const selPart=document.createElement('select');selPart.className='sel-filtro';selPart.style.cssText='width:100%;margin-bottom:10px;';
+  apostadores.sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(ap=>{const o=document.createElement('option');o.value=ap.id;o.textContent=ap.nome;selPart.appendChild(o);});
+  p3.appendChild(selPart);
+  const partStatDiv=document.createElement('div');p3.appendChild(partStatDiv);
+  function renderPartStat(apId){
+    partStatDiv.innerHTML='';
+    const votos=apostas[apId]||{};
+    const qtd=Object.keys(votos).length;
+    let vA=0,vE=0,vB=0,acertos=0,erros=0;
+    JOGOS.forEach(j=>{const v=votos[j.id];if(v==='A')vA++;else if(v==='E')vE++;else if(v==='B')vB++;const r=resultados[j.id];if(r&&v){if(v===r)acertos++;else erros++;}});
+    const totV=vA+vE+vB||1;
+    const jogosComResLocal=JOGOS.filter(j=>resultados[j.id]).length;
+    // KPIs do participante
+    const kg=document.createElement('div');kg.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;';
+    [[qtd+'/72','var(--amarelo)','Apostas'],[acertos,'#00cc66','Acertos'],[erros,'#ff4444','Erros'],[Math.round(vA/totV*100)+'%','#00cc66','Vitória'],[ Math.round(vE/totV*100)+'%','#FFD700','Empate'],[Math.round(vB/totV*100)+'%','#4488ff','Derrota']].forEach(([v,cor,l])=>{const k=document.createElement('div');k.style.cssText='background:var(--card2);border-radius:8px;padding:8px;text-align:center;border:1px solid var(--border);';k.innerHTML='<div style="font-family:Bebas Neue,cursive;font-size:1.3rem;color:'+cor+';">'+v+'</div><div style="font-size:.65rem;color:#888;">'+l+'</div>';kg.appendChild(k);});
+    partStatDiv.appendChild(kg);
+    // Taxa de acerto
+    if(jogosComResLocal>0){
+      const taxaEl=document.createElement('div');taxaEl.style.cssText='background:var(--card2);border-radius:8px;padding:10px 12px;margin-bottom:8px;';
+      const pctAc=jogosComResLocal>0?Math.round(acertos/jogosComResLocal*100):0;
+      taxaEl.innerHTML='<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:.78rem;font-weight:700;">Taxa de acerto</span><span style="font-family:Bebas Neue,cursive;color:'+(pctAc>=50?'#00cc66':'#ff8844')+';">'+pctAc+'%</span></div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+pctAc+'%;background:'+(pctAc>=50?'#00cc66':'#ff8844')+';"></div></div>';
+      partStatDiv.appendChild(taxaEl);
+    }
+  }
+  if(apostadores.length){renderPartStat(apostadores[0].id);}
+  selPart.addEventListener('change',()=>renderPartStat(selPart.value));
+
+  // ── PAINEL 4: Tendências ──
+  const p4=analPanels['tendencia'];
+  // % geral A/E/B
+  const totGeral=totalA+totalE+totalB||1;
+  const tGrid=document.createElement('div');tGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;';
+  [['Vitória Casa',totalA,totGeral,'#00cc66','fA'],['Empate',totalE,totGeral,'#FFD700','fE'],['Vitória Visit.',totalB,totGeral,'#4488ff','fB']].forEach(([lbl,val,tot,cor])=>{
+    const pct=Math.round(val/tot*100);
+    const b=document.createElement('div');b.style.cssText='background:var(--card2);border-radius:10px;padding:12px;text-align:center;border-top:3px solid '+cor+';';
+    b.innerHTML='<div style="font-family:Bebas Neue,cursive;font-size:1.8rem;color:'+cor+';">'+pct+'%</div><div style="font-size:.7rem;color:#888;margin-top:2px;">'+lbl+'</div><div style="font-size:.65rem;color:#555;">'+val.toLocaleString()+' palpites</div>';
+    tGrid.appendChild(b);
+  });
+  p4.appendChild(tGrid);
+  // Top 5 jogos com mais empates apostados
+  const empateTop=JOGOS.map(j=>{let e=0,tot=0;apostadores.forEach(ap=>{const v=(apostas[ap.id]||{})[j.id];if(v){tot++;if(v==='E')e++;}});return{j,e,tot,pct:tot>0?Math.round(e/tot*100):0};}).filter(x=>x.tot>0).sort((a,b)=>b.pct-a.pct).slice(0,5);
+  if(empateTop.length){
+    const etit=document.createElement('div');etit.className='stats-section-title';etit.style.marginTop='8px';etit.textContent='🤝 TOP 5 JOGOS COM MAIS EMPATES APOSTADOS';p4.appendChild(etit);
+    empateTop.forEach((x,i)=>{const row=document.createElement('div');row.className='ranking-stat-row';row.innerHTML='<div class="ranking-stat-pos">'+(i+1)+'</div><div class="ranking-stat-nome" style="font-size:.8rem;">'+x.j.a+' × '+x.j.b+'<div style="font-size:.65rem;color:#666;">Gr.'+x.j.g+' • '+x.j.d+'</div></div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+x.pct+'%;background:#aa7700;"></div></div><div style="text-align:right;min-width:60px;"><div style="font-family:Bebas Neue,cursive;color:#FFD700;">'+x.pct+'%</div><div style="font-size:.65rem;color:#888;">'+x.e+'/'+x.tot+'</div></div>';p4.appendChild(row);});
+  }
+  // Jogos sem nenhuma aposta
+  const semVoto=JOGOS.filter(j=>apostadores.every(ap=>!(apostas[ap.id]||{})[j.id]));
+  if(semVoto.length){
+    const svTit=document.createElement('div');svTit.className='stats-section-title';svTit.style.marginTop='12px';svTit.textContent='⚠️ JOGOS SEM NENHUMA APOSTA ('+semVoto.length+')';p4.appendChild(svTit);
+    semVoto.forEach(j=>{const row=document.createElement('div');row.style.cssText='background:rgba(200,80,0,.1);border:1px solid #883300;border-radius:8px;padding:8px 12px;margin-bottom:4px;font-size:.78rem;';row.textContent=j.a+' × '+j.b+' • Gr.'+j.g+' • '+j.d;p4.appendChild(row);});
+  }
+
+  // Listener tabs análise
+  analTabs.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      analAtiva=btn.dataset.anal;
+      analTabs.querySelectorAll('button').forEach(b=>{b.style.background='transparent';b.style.color='#555';});
+      btn.style.background='var(--verde)';btn.style.color='var(--amarelo)';
+      Object.entries(analPanels).forEach(([id,p])=>p.style.display=id===analAtiva?'block':'none');
+    });
+  });
+  cont.appendChild(analSection);
+
+  // Ranking de acertos
+  if(jogosComRes>0&&rank.length>0){
+    const rk=document.createElement('div');rk.className='stats-section';
+    const rt=document.createElement('div');rt.className='stats-section-title';rt.textContent='🏆 RANKING DE ACERTOS';rk.appendChild(rt);
+    const maxPts=rank[0]?.pts||1;
+    rank.forEach((r,i)=>{const row=document.createElement('div');row.className='ranking-stat-row';const cor=i===0?'#FFD700':i===1?'#aaa':i===2?'#cd7f32':'#888';const emoji=['🥇','🥈','🥉'][i]||(i+1)+'º';const pctAcerto=jogosComRes>0?Math.round(r.ac/jogosComRes*100):0;row.innerHTML='<div class="ranking-stat-pos">'+emoji+'</div><div class="ranking-stat-nome">'+r.nome+'</div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+Math.round(r.pts/maxPts*100)+'%;background:'+cor+';"></div></div><div style="text-align:right;min-width:80px;"><div class="ranking-stat-val" style="color:'+cor+';">'+r.pts+'pts</div><div style="font-size:.65rem;color:#888;">'+r.ac+' acertos • '+pctAcerto+'%</div></div>';rk.appendChild(row);});
+    cont.appendChild(rk);
+  }
+}
+
 let presenceRef=null;
 let onlineUsuarios={};
 
@@ -2330,6 +2597,7 @@ document.getElementById('dashSubtabs').addEventListener('click',(e)=>{
   dashPainelAtivo=sub;
   // Renderizar o painel selecionado
   if(sub==='geral')renderDashGeral();
+  else if(sub==='estatisticas')renderDashEstatisticas();
   else if(sub==='pagamentos')renderDashPagamentos();
   else if(sub==='status')renderDashStatus();
 });
