@@ -642,10 +642,10 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
 
       <!-- DOIS MODOS -->
       <div class="res-header-btns">
-        <button class="btn-res-auto" id="btnModoAuto" onclick="ativarModoAuto()">
+        <button class="btn-res-auto" id="btnModoAuto">
           🔄 AUTOMÁTICO
         </button>
-        <button class="btn-res-manual" id="btnModoManual" onclick="ativarModoManual()">
+        <button class="btn-res-manual" id="btnModoManual">
           ✏️ MANUAL
         </button>
       </div>
@@ -655,7 +655,7 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
           <div style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1rem;margin-bottom:4px;">🔄 SINCRONIZAÇÃO AUTOMÁTICA</div>
           <div style="font-size:.75rem;color:#888;margin-bottom:12px;">Busca e salva automaticamente os resultados finalizados via football-data.org</div>
-          <button class="btn-res-auto" id="btnSyncResultados" onclick="sincronizarResultados()" style="width:100%;font-size:1rem;">
+          <button class="btn-res-auto" id="btnSyncResultados" style="width:100%;font-size:1rem;">
             🔄 SINCRONIZAR AGORA
           </button>
           <div class="sync-status" id="syncStatus" style="margin-top:8px;"></div>
@@ -2231,7 +2231,8 @@ function ativarModoManual(){
   document.getElementById('btnModoManual').style.color='#fff';
   document.getElementById('btnModoAuto').style.background='linear-gradient(135deg,#003311,#006622)';
   document.getElementById('btnModoAuto').style.color='var(--amarelo)';
-  renderResultados();
+  // Renderizar lista de jogos no painel manual
+  renderResultadosLista();
 }
 
 function addLog(msg,tipo){
@@ -2825,6 +2826,17 @@ document.getElementById('dashSubtabs').addEventListener('click',(e)=>{
   else if(sub==='pagamentos')renderDashPagamentos();
   else if(sub==='status')renderDashStatus();
 });
+
+// ===== RESULTADOS — MODOS MANUAL/AUTO =====
+document.getElementById('btnModoAuto').addEventListener('click', ()=>{
+  ativarModoAuto();
+});
+document.getElementById('btnModoManual').addEventListener('click', ()=>{
+  ativarModoManual();
+});
+document.getElementById('btnSyncResultados').addEventListener('click', sincronizarResultados);
+// Abrir modo manual por padrão ao carregar aba
+ativarModoManual();
 
 // Vincular eventos de edição e comunicação (dentro do módulo)
 document.getElementById('btnEditarBV').addEventListener('click', toggleEditBV);
