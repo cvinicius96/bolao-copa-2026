@@ -472,6 +472,31 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
 .stat-filtro-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
 .stat-filtro-btn{padding:5px 12px;border-radius:16px;border:1px solid var(--border);background:transparent;color:#666;cursor:pointer;font-size:.72rem;font-weight:700;transition:all .2s;}
 .stat-filtro-btn.active{background:var(--verde);color:var(--amarelo);border-color:var(--verde);}
+
+/* SYNC RESULTADOS */
+.btn-sync-res{background:linear-gradient(135deg,#1a3a1a,#006622);color:var(--amarelo);border:1px solid var(--amarelo);border-radius:8px;padding:10px 16px;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.92rem;letter-spacing:1px;display:flex;align-items:center;gap:7px;transition:all .2s;}
+.btn-sync-res:hover{background:linear-gradient(135deg,#006622,#009933);}
+.btn-sync-res.loading{opacity:.7;cursor:not-allowed;}
+.sync-status{font-size:.75rem;margin-top:6px;padding:6px 10px;border-radius:6px;display:none;}
+.sync-status.ok{background:rgba(0,180,80,.15);color:#00cc66;border:1px solid #006633;display:block;}
+.sync-status.err{background:rgba(200,0,0,.12);color:#ff8888;border:1px solid #660000;display:block;}
+.sync-status.info{background:rgba(68,136,255,.12);color:#88aaff;border:1px solid #223366;display:block;}
+
+/* BOTÕES RESULTADO MANUAL/AUTO */
+.res-header-btns{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.btn-res-auto{flex:1;min-width:160px;background:linear-gradient(135deg,#003311,#006622);color:var(--amarelo);border:1px solid var(--amarelo);border-radius:10px;padding:12px 14px;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.95rem;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;}
+.btn-res-auto:hover{background:linear-gradient(135deg,#006622,#009933);}
+.btn-res-auto.loading{opacity:.6;cursor:not-allowed;}
+.btn-res-manual{flex:1;min-width:160px;background:linear-gradient(135deg,#001a33,#003366);color:#88aaff;border:1px solid #4488ff;border-radius:10px;padding:12px 14px;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.95rem;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;}
+.btn-res-manual:hover{background:linear-gradient(135deg,#003366,#0055aa);}
+.btn-res-manual.ativo{background:linear-gradient(135deg,#003366,#0055aa);color:#fff;}
+.res-modo-desc{font-size:.75rem;color:#666;text-align:center;margin-top:-8px;margin-bottom:10px;}
+.sync-log{background:#0a1a0a;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:.75rem;line-height:1.7;margin-top:8px;display:none;max-height:150px;overflow-y:auto;}
+.sync-log.show{display:block;}
+.sync-log .log-ok{color:#00cc66;}
+.sync-log .log-info{color:#88aaff;}
+.sync-log .log-warn{color:#ffaa44;}
+.sync-log .log-err{color:#ff6666;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:#050f05;}
 ::-webkit-scrollbar-thumb{background:var(--verde);border-radius:3px;}
@@ -614,12 +639,42 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
 
     <div class="tab-content" id="tab-resultados">
       <h2 class="section-title">📊 RESULTADOS</h2>
-      <p class="section-sub">Insira o resultado real. Clique novamente para desmarcar.</p>
-      <div class="modo-row" id="res-modo-row"></div>
-      <div class="filtro-grupo" id="res-filtros"></div>
-      <div id="resultadosLista"></div>
-      <div style="text-align:center;margin-top:12px;">
-        <button class="btn-salvar-grande" id="btnSalvarRes">💾 SALVAR RESULTADOS</button>
+
+      <!-- DOIS MODOS -->
+      <div class="res-header-btns">
+        <button class="btn-res-auto" id="btnModoAuto" onclick="ativarModoAuto()">
+          🔄 AUTOMÁTICO
+        </button>
+        <button class="btn-res-manual" id="btnModoManual" onclick="ativarModoManual()">
+          ✏️ MANUAL
+        </button>
+      </div>
+
+      <!-- PAINEL AUTOMÁTICO -->
+      <div id="painelAuto" style="display:none;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;">
+          <div style="font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1rem;margin-bottom:4px;">🔄 SINCRONIZAÇÃO AUTOMÁTICA</div>
+          <div style="font-size:.75rem;color:#888;margin-bottom:12px;">Busca e salva automaticamente os resultados finalizados via football-data.org</div>
+          <button class="btn-res-auto" id="btnSyncResultados" onclick="sincronizarResultados()" style="width:100%;font-size:1rem;">
+            🔄 SINCRONIZAR AGORA
+          </button>
+          <div class="sync-status" id="syncStatus" style="margin-top:8px;"></div>
+          <div class="sync-log" id="syncLog"></div>
+        </div>
+        <div style="font-size:.75rem;color:#555;text-align:center;padding:4px;">
+          ℹ️ A sincronização reconhece todos os jogos finalizados desde o início do torneio
+        </div>
+      </div>
+
+      <!-- PAINEL MANUAL -->
+      <div id="painelManual" style="display:none;">
+        <p class="section-sub" style="margin-bottom:10px;">Clique no nome da seleção vencedora ou em Empate. Clique novamente para desmarcar.</p>
+        <div class="modo-row" id="res-modo-row"></div>
+        <div class="filtro-grupo" id="res-filtros"></div>
+        <div id="resultadosLista"></div>
+        <div style="text-align:center;margin-top:12px;">
+          <button class="btn-salvar-grande" id="btnSalvarRes">💾 SALVAR RESULTADOS</button>
+        </div>
       </div>
     </div>
 
@@ -2108,6 +2163,175 @@ function renderDashEstatisticas(){
     rank.forEach((r,i)=>{const row=document.createElement('div');row.className='ranking-stat-row';const cor=i===0?'#FFD700':i===1?'#aaa':i===2?'#cd7f32':'#888';const emoji=['🥇','🥈','🥉'][i]||(i+1)+'º';const pctAcerto=jogosComRes>0?Math.round(r.ac/jogosComRes*100):0;row.innerHTML='<div class="ranking-stat-pos">'+emoji+'</div><div class="ranking-stat-nome">'+r.nome+'</div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+Math.round(r.pts/maxPts*100)+'%;background:'+cor+';"></div></div><div style="text-align:right;min-width:80px;"><div class="ranking-stat-val" style="color:'+cor+';">'+r.pts+'pts</div><div style="font-size:.65rem;color:#888;">'+r.ac+' acertos • '+pctAcerto+'%</div></div>';rk.appendChild(row);});
     cont.appendChild(rk);
   }
+}
+
+// ===== SYNC AUTOMÁTICO DE RESULTADOS =====
+const FD_TOKEN='f6008d58d9d24134b7f96ab1c052e672';
+
+// Mapa: nome da API → nome no bolão (normalizado)
+const NOME_MAP={
+  'Mexico':'México','South Africa':'África do Sul','Korea Republic':'Coreia do Sul',
+  'Czechia':'Rep. Tcheca','Czech Republic':'Rep. Tcheca',
+  'Canada':'Canadá','Bosnia-Herzegovina':'Bósnia','Bosnia and Herzegovina':'Bósnia',
+  'USA':'EUA','United States':'EUA','Paraguay':'Paraguai',
+  'Qatar':'Catar','Switzerland':'Suíça','Brazil':'Brasil','Morocco':'Marrocos',
+  'Haiti':'Haiti','Scotland':'Escócia','Australia':'Austrália','Turkey':'Turquia',
+  'Germany':'Alemanha','Curaçao':'Curaçao','Ivory Coast':'Costa do Marfim',
+  "Côte d'Ivoire":'Costa do Marfim','Ecuador':'Equador',
+  'Netherlands':'Holanda','Japan':'Japão','Sweden':'Suécia','Tunisia':'Tunísia',
+  'Belgium':'Bélgica','Egypt':'Egito','Iran':'Irã','New Zealand':'Nova Zelândia',
+  'Spain':'Espanha','Cape Verde':'Cabo Verde','Saudi Arabia':'Arábia Saudita',
+  'Uruguay':'Uruguai','France':'França','Senegal':'Senegal','Iraq':'Iraque',
+  'Norway':'Noruega','Argentina':'Argentina','Algeria':'Argélia',
+  'Austria':'Áustria','Jordan':'Jordânia','Portugal':'Portugal',
+  'DR Congo':'RD Congo','Uzbekistan':'Uzbequistão','Colombia':'Colômbia',
+  'England':'Inglaterra','Croatia':'Croácia','Ghana':'Gana','Panama':'Panamá',
+  'Korea DPR':'Coreia do Norte','Serbia':'Sérvia',
+};
+
+function normNome(n){return NOME_MAP[n]||n;}
+
+// Encontrar jogo pelo par de times
+function encontrarJogo(homeNome, awayNome){
+  const h=normNome(homeNome);
+  const a=normNome(awayNome);
+  return JOGOS.find(j=>
+    (j.a===h&&j.b===a)||(j.a===a&&j.b===h)
+  );
+}
+
+// Converter resultado da API para A/E/B
+function converterResultado(match, jogoLocal){
+  const score=match.score;
+  if(!score||!score.fullTime)return null;
+  const home=score.fullTime.home;
+  const away=score.fullTime.away;
+  if(home===null||away===null)return null;
+  const homeNomeAPI=match.homeTeam?.name;
+  const awayNomeAPI=match.awayTeam?.name;
+  const homeNome=normNome(homeNomeAPI);
+  // Determinar se home = time A ou B no bolão
+  if(home>away)return jogoLocal.a===homeNome?'A':'B';
+  if(away>home)return jogoLocal.a===homeNome?'B':'A';
+  return 'E';
+}
+
+function ativarModoAuto(){
+  document.getElementById('painelAuto').style.display='block';
+  document.getElementById('painelManual').style.display='none';
+  document.getElementById('btnModoAuto').style.background='linear-gradient(135deg,#006622,#009933)';
+  document.getElementById('btnModoAuto').style.color='#FFD700';
+  document.getElementById('btnModoManual').style.background='linear-gradient(135deg,#001a33,#003366)';
+  document.getElementById('btnModoManual').style.color='#88aaff';
+}
+function ativarModoManual(){
+  document.getElementById('painelAuto').style.display='none';
+  document.getElementById('painelManual').style.display='block';
+  document.getElementById('btnModoManual').style.background='linear-gradient(135deg,#003366,#0055aa)';
+  document.getElementById('btnModoManual').style.color='#fff';
+  document.getElementById('btnModoAuto').style.background='linear-gradient(135deg,#003311,#006622)';
+  document.getElementById('btnModoAuto').style.color='var(--amarelo)';
+  renderResultados();
+}
+
+function addLog(msg,tipo){
+  const log=document.getElementById('syncLog');
+  if(!log)return;
+  log.classList.add('show');
+  const line=document.createElement('div');
+  line.className='log-'+tipo;
+  const hora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  line.textContent='['+hora+'] '+msg;
+  log.appendChild(line);
+  log.scrollTop=log.scrollHeight;
+}
+
+async function sincronizarResultados(){
+  const btn=document.getElementById('btnSyncResultados');
+  const statusEl=document.getElementById('syncStatus');
+  const logEl=document.getElementById('syncLog');
+  if(!btn||!statusEl)return;
+  if(logEl){logEl.innerHTML='';logEl.classList.add('show');}
+  btn.classList.add('loading');btn.innerHTML='⏳ BUSCANDO...';
+  statusEl.className='sync-status info';statusEl.style.display='block';statusEl.textContent='Conectando à API de resultados...';
+  addLog('Iniciando sincronização...','info');
+
+  try{
+    // Buscar jogos da Copa 2026 fase de grupos
+    const url='https://api.football-data.org/v4/competitions/WC/matches?season=2026&stage=GROUP_STAGE';
+    const resp=await fetch(url,{
+      headers:{'X-Auth-Token':FD_TOKEN},
+      mode:'cors'
+    });
+    if(!resp.ok)throw new Error('API retornou status '+resp.status);
+    const data=await resp.json();
+    const matches=data.matches||[];
+    if(!matches.length)throw new Error('Nenhum jogo retornado pela API');
+
+    // Filtrar só jogos concluídos
+    addLog('API respondeu: '+matches.length+' jogos encontrados','ok');
+    const concluidos=matches.filter(m=>m.status==='FINISHED');
+    addLog(concluidos.length+' jogos finalizados','info');
+    if(!concluidos.length){
+      statusEl.className='sync-status info';statusEl.style.display='block';
+      statusEl.textContent='ℹ️ Nenhum jogo finalizado ainda.';
+      btn.classList.remove('loading');btn.innerHTML='🔄 SINCRONIZAR AGORA';
+      return;
+    }
+
+    // Mapear resultados para o formato do bolão
+    const novosResultados={...resultados};
+    let atualizados=0,naoEncontrados=[];
+
+    concluidos.forEach(m=>{
+      const hn=m.homeTeam?.name||'?';const an=m.awayTeam?.name||'?';
+      const jogo=encontrarJogo(hn,an);
+      if(!jogo){naoEncontrados.push(hn+' x '+an);return;}
+      const res=converterResultado(m,jogo);
+      if(!res)return;
+      const sc=m.score?.fullTime;
+      const placar=sc?sc.home+'x'+sc.away:'';
+      if(novosResultados[jogo.id]!==res){
+        novosResultados[jogo.id]=res;
+        atualizados++;
+        const venc=res==='A'?jogo.a:res==='E'?'Empate':jogo.b;
+        addLog(jogo.a+' x '+jogo.b+' ('+placar+') → '+venc,'ok');
+      } else {
+        addLog(jogo.a+' x '+jogo.b+' — já atualizado','info');
+      }
+    });
+
+    if(naoEncontrados.length>0){
+      naoEncontrados.forEach(n=>addLog('Não mapeado: '+n,'warn'));
+    }
+
+    if(atualizados>0){
+      await setDoc(doc(db,'config','resultados'),{votos:novosResultados});
+      resultados=novosResultados;
+      addLog(atualizados+' resultado(s) salvos no Firebase!','ok');
+      statusEl.className='sync-status ok';statusEl.style.display='block';
+      statusEl.textContent='✅ '+atualizados+' novo(s) resultado(s) salvo(s)!';
+      toast('✅ '+atualizados+' resultado(s) sincronizado(s)!','ok');
+      renderResultados();renderRanking();
+      const tAtiva=document.querySelector('.tab.active');
+      if(tAtiva&&tAtiva.dataset.tab==='dashboard')renderDashGeral();
+    } else {
+      addLog('Nenhuma novidade — todos os resultados já estavam corretos','info');
+      statusEl.className='sync-status ok';statusEl.style.display='block';
+      statusEl.textContent='✅ Tudo atualizado! Nenhuma novidade nos resultados.';
+    }
+
+  }catch(e){
+    console.error('Sync erro:',e);
+    addLog('ERRO: '+e.message,'err');
+    statusEl.className='sync-status err';statusEl.style.display='block';
+    if(e.message.includes('CORS')||e.message.includes('Failed to fetch')){
+      statusEl.textContent='❌ Bloqueio CORS. Tente pelo celular ou aguarde.';
+    } else {
+      statusEl.textContent='❌ Erro: '+e.message;
+    }
+  }
+  btn.classList.remove('loading');btn.innerHTML='🔄 SINCRONIZAR AGORA';
 }
 
 let presenceRef=null;
