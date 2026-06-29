@@ -171,11 +171,10 @@ const db=getFirestore(app);
 // FASES DO MATA-MATA
 // =============================================
 const FASES=[
-  {id:'32avos',label:'32-AVOS DE FINAL'},
+  {id:'segunda',label:'SEGUNDA FASE'},
   {id:'oitavas',label:'OITAVAS DE FINAL'},
   {id:'quartas',label:'QUARTAS DE FINAL'},
   {id:'semis',label:'SEMIFINAL'},
-  {id:'3lugar',label:'DISPUTA DE 3º LUGAR'},
   {id:'final',label:'FINAL'},
 ];
 
@@ -201,6 +200,9 @@ function formatarTel(v){
   return '('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7,11);
 }
 document.getElementById('inputTelefone').addEventListener('input',function(){this.value=formatarTel(this.value);});
+
+// Pré-preenche nome via URL param ?nome=...
+(()=>{const p=new URLSearchParams(window.location.search).get('nome');if(p)document.getElementById('inputNome').value=decodeURIComponent(p);})();
 
 function parseKickoff(jogo){
   if(!jogo.data)return null;
@@ -458,10 +460,24 @@ async function renderAcertos(){
   }catch(e){console.error(e);}
 
   box.innerHTML='';
+  const jogosTotal=mmJogos.length;
+  const pctReal=jogosTotal?Math.round(jogosComResultado.length/jogosTotal*100):0;
   const resumo=document.createElement('div');
-  resumo.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;text-align:center;';
-  resumo.innerHTML='<div style="font-family:\'Bebas Neue\',cursive;font-size:2.4rem;color:var(--gold);">'+pts+' pt'+(pts!==1?'s':'')+'</div>'
-    +'<div style="font-size:.78rem;color:var(--muted);margin-top:2px;">'+jogosComResultado.length+' de '+mmJogos.length+' jogo(s) com resultado'+(posicaoTxt?' • Posição: '+posicaoTxt:'')+'</div>';
+  resumo.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px;';
+  resumo.innerHTML=
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">'
+      +'<span style="font-family:\'Bebas Neue\',cursive;font-size:.9rem;letter-spacing:1px;color:#aaa;">MEUS PONTOS</span>'
+      +'<span style="font-family:\'Bebas Neue\',cursive;font-size:2.2rem;color:var(--gold);line-height:1;">'+pts+' pt'+(pts!==1?'s':'')+'</span>'
+    +'</div>'
+    +(posicaoTxt?'<div style="font-size:.75rem;color:var(--muted);text-align:right;margin-bottom:12px;">📍 '+posicaoTxt+'</div>':'<div style="margin-bottom:12px;"></div>')
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+      +'<span style="font-size:.75rem;color:#888;">⚽ Jogos realizados</span>'
+      +'<span style="font-family:\'Bebas Neue\',cursive;font-size:1.1rem;color:var(--gold);">'+jogosComResultado.length+'/'+jogosTotal+'</span>'
+    +'</div>'
+    +'<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">'
+      +'<div style="height:100%;width:'+pctReal+'%;background:linear-gradient(90deg,var(--green2),var(--gold));border-radius:3px;transition:width .4s;"></div>'
+    +'</div>'
+    +(jogosComResultado.length===0?'<div style="font-size:.72rem;color:#556;text-align:center;margin-top:10px;">Aguardando resultados...</div>':'');
   box.appendChild(resumo);
 
   FASES.forEach(f=>{

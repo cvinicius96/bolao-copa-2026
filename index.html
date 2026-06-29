@@ -195,6 +195,18 @@ h1,h2,h3{font-family:'Bebas Neue',cursive;}
 .btn-migrar-mm{background:rgba(255,100,0,.12);color:#ff8844;border:1px solid #883300;border-radius:8px;padding:6px 10px;font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap;}
 .btn-migrar-mm:hover{background:rgba(255,100,0,.22);}
 .btn-migrar-mm.feito{background:rgba(0,180,80,.12);color:#00cc66;border-color:#006633;cursor:default;}
+.btn-share-mm{background:linear-gradient(135deg,#0055bb,#003d8a);color:#fff;border:none;border-radius:8px;padding:7px 10px;cursor:pointer;font-size:.78rem;font-weight:700;margin-top:6px;width:100%;letter-spacing:.3px;}
+.btn-share-mm:hover{opacity:.88;}
+.mm-indicadores{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+.mm-indic-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.mm-indic-label{font-family:'Bebas Neue',cursive;font-size:.95rem;letter-spacing:1px;color:#bbb;}
+.mm-indic-valor{font-family:'Bebas Neue',cursive;font-size:1.7rem;color:var(--amarelo);line-height:1;}
+.mm-indic-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:10px;}
+.mm-indic-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green2),var(--amarelo));transition:width .4s;}
+.mm-fases-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.mm-fase-chip{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:.72rem;display:flex;gap:5px;align-items:center;}
+.mm-fase-chip span:first-child{color:#888;}
+.mm-fase-chip span:last-child{color:var(--amarelo);font-weight:700;}
 .edit-btns{display:flex;gap:8px;margin-top:4px;}
 .btn-salvar-edit{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;border:none;border-radius:8px;padding:10px;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.95rem;flex:1;}
 .btn-cancel-edit{background:transparent;color:#aaa;border:1px solid #555;border-radius:8px;padding:10px;cursor:pointer;font-size:.95rem;flex:1;}
@@ -1024,11 +1036,10 @@ const JOGOS=[
 ];
 const GRUPOS=[...new Set(JOGOS.map(j=>j.g))];
 const FASES_MM=[
-  {id:'32avos',label:'32-AVOS DE FINAL'},
+  {id:'segunda',label:'SEGUNDA FASE'},
   {id:'oitavas',label:'OITAVAS DE FINAL'},
   {id:'quartas',label:'QUARTAS DE FINAL'},
   {id:'semis',label:'SEMIFINAL'},
-  {id:'3lugar',label:'DISPUTA DE 3º LUGAR'},
   {id:'final',label:'FINAL'},
 ];
 function getDatas(){return[...new Set(JOGOS.map(j=>j.d))].sort((a,b)=>{const[da,ma]=a.split('/').map(Number);const[db,mb]=b.split('/').map(Number);return ma!==mb?ma-mb:da-db;});}
@@ -2503,6 +2514,19 @@ function renderMMParticipantes(){
     else{card.appendChild(av);card.appendChild(nm);}
     card.appendChild(origemBadge);
     card.appendChild(eng);card.appendChild(drop);
+
+    // Botão compartilhar link individual
+    const shareBtn=document.createElement('button');
+    shareBtn.className='btn-share-mm';
+    shareBtn.textContent='📤 Enviar link';
+    shareBtn.addEventListener('click',()=>{
+      const senha=(ap.senha&&ap.senha.trim())?ap.senha.trim():'2026';
+      const nomeEnc=encodeURIComponent(ap.nome);
+      const url='https://cvinicius96.github.io/bolao-copa-2026/matamata.html?nome='+nomeEnc;
+      const msg='🥊 *BOLÃO COPA 2026 — MATA-MATA*\n\nOlá, '+ap.nome+'! Acesse o link abaixo para registrar seus palpites do mata-mata:\n\n🔗 '+url+'\n\n👤 Nome: *'+ap.nome+'*\n🔑 Senha: *'+senha+'*\n\nBoa sorte! ⚽🏆';
+      abrirWpp(ap,msg);
+    });
+    card.appendChild(shareBtn);
     grid.appendChild(card);
   });
   cont.appendChild(grid);
@@ -2639,11 +2663,11 @@ async function salvarMMJogos(){
 }
 
 const STAGE_MAP_MM={
-  'LAST_32':'32avos','ROUND_OF_32':'32avos',
+  'LAST_32':'segunda','ROUND_OF_32':'segunda','LAST_16_PLAY_OFF':'segunda',
   'ROUND_OF_16':'oitavas','LAST_16':'oitavas',
   'QUARTER_FINALS':'quartas','QUARTERFINALS':'quartas',
   'SEMI_FINALS':'semis','SEMIFINALS':'semis',
-  'THIRD_PLACE':'3lugar','THIRD_PLACE_FINAL':'3lugar',
+  'THIRD_PLACE':'final','THIRD_PLACE_FINAL':'final',
   'FINAL':'final',
 };
 
@@ -2752,17 +2776,38 @@ function renderMMResumo(){
     return{...ap,pts};
   }).sort((a,b)=>b.pts-a.pts);
 
-  const info=document.createElement('div');
-  info.style.cssText='font-size:.78rem;color:#888;margin-bottom:14px;';
-  info.textContent=jogosComResultado.length+' de '+mmJogos.length+' jogo(s) com resultado cadastrado.';
-  cont.appendChild(info);
+  // === Painel de indicadores ===
+  const totalJogos=mmJogos.length;
+  const realizados=jogosComResultado.length;
+  const pctReal=totalJogos?Math.round(realizados/totalJogos*100):0;
+
+  const indicBox=document.createElement('div');
+  indicBox.className='mm-indicadores';
+
+  const chips=FASES_MM.map(f=>{
+    const tot=mmJogos.filter(j=>j.fase===f.id).length;
+    if(!tot)return '';
+    const real=mmJogos.filter(j=>j.fase===f.id&&typeof j.golsA==='number'&&typeof j.golsB==='number').length;
+    const label=f.label.replace(' DE FINAL','').replace('DISPUTA DE ','');
+    return '<div class="mm-fase-chip"><span>'+label+'</span><span>'+real+'/'+tot+'</span></div>';
+  }).filter(Boolean).join('');
+
+  indicBox.innerHTML=
+    '<div class="mm-indic-row">'
+      +'<span class="mm-indic-label">⚽ Jogos realizados</span>'
+      +'<span class="mm-indic-valor">'+realizados+'/'+totalJogos+'</span>'
+    +'</div>'
+    +'<div class="mm-indic-bar"><div class="mm-indic-fill" style="width:'+pctReal+'%;"></div></div>'
+    +'<div class="mm-fases-chips">'+chips+'</div>';
+  cont.appendChild(indicBox);
 
   const maxPts=ranking[0]?.pts||1;
   ranking.forEach((r,i)=>{
     const row=document.createElement('div');row.className='ranking-stat-row';
     const cor=i===0?'#FFD700':i===1?'#aaa':i===2?'#cd7f32':'#888';
     const emoji=['🥇','🥈','🥉'][i]||(i+1)+'º';
-    row.innerHTML='<div class="ranking-stat-pos">'+emoji+'</div><div class="ranking-stat-nome">'+r.nome+'</div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+Math.round(r.pts/maxPts*100)+'%;background:'+cor+';"></div></div><div style="text-align:right;min-width:60px;"><div class="ranking-stat-val" style="color:'+cor+';">'+r.pts+'pts</div></div>';
+    const pctAcerto=realizados>0?Math.round(r.pts/realizados*100):0;
+    row.innerHTML='<div class="ranking-stat-pos">'+emoji+'</div><div class="ranking-stat-nome">'+r.nome+'</div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+Math.round(r.pts/(maxPts||1)*100)+'%;background:'+cor+';"></div></div><div style="text-align:right;min-width:80px;"><div class="ranking-stat-val" style="color:'+cor+';">'+r.pts+'pts</div><div style="font-size:.65rem;color:#666;">'+pctAcerto+'% de acerto</div></div>';
     cont.appendChild(row);
   });
 }
