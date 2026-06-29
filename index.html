@@ -1049,6 +1049,7 @@ let currentUser=null,isAdmin=false,apostadores=[],apostas={},resultados={};
 let mmApostadores=[],mmApostas={},mmJogos=[],mmJogosEdit=[];
 let mmEditApId=null;
 let mmPainelAtivo='participantes';
+let mmConfig={palpitesVisiveis:false,encerrado:false};
 let editPago=false;
 let bolaoConfig={palpitesVisiveis:false,encerrado:false};
 let jModo='grupo',jFiltro='TODOS',rModo='grupo',rFiltro='TODOS';
@@ -1082,6 +1083,7 @@ async function loadData(){
         mmApostadores=await fbList('mmApostadores');
         const mmAp=await fbList('mmApostas');mmApostas={};mmAp.forEach(a=>{mmApostas[a.id]=a.palpites||{};});
         const mmJ=await fbGet('config','mmJogos');mmJogos=mmJ?mmJ.lista||[]:[];
+        const mmCfg=await fbGet('config','mmConfig');if(mmCfg)mmConfig={palpitesVisiveis:false,encerrado:false,...mmCfg};
       })(),
       timeout
     ]);
@@ -1150,6 +1152,11 @@ function iniciarSync(){
   });
   onSnapshot(doc(db,'config','mmJogos'),s=>{
     mmJogos=s.exists()?s.data().lista||[]:[];
+    const t=document.querySelector('.tab.active');
+    if(t&&t.dataset.tab==='mata-mata'&&mmPainelAtivo==='resumo')renderMMResumo();
+  });
+  onSnapshot(doc(db,'config','mmConfig'),s=>{
+    if(s.exists())mmConfig={palpitesVisiveis:false,encerrado:false,...s.data()};
     const t=document.querySelector('.tab.active');
     if(t&&t.dataset.tab==='mata-mata'&&mmPainelAtivo==='resumo')renderMMResumo();
   });
@@ -2765,6 +2772,41 @@ function renderMMResumo(){
   cont.innerHTML='';
   if(!mmApostadores.length){cont.innerHTML='<p style="color:#666;text-align:center;padding:20px;">Nenhum participante no Mata-Mata ainda.</p>';return;}
   if(!mmJogos.length){cont.innerHTML='<p style="color:#666;text-align:center;padding:20px;">Nenhum jogo cadastrado ainda.</p>';return;}
+
+  // === Botões de controle ===
+  const ctrlBox=document.createElement('div');
+  ctrlBox.style.cssText='display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;';
+
+  // Botão: liberar/ocultar palpites dos adversários
+  const btnPV=document.createElement('button');
+  btnPV.className='btn-sync-res';
+  btnPV.style.cssText='flex:1;min-width:200px;'+( mmConfig.palpitesVisiveis?'background:rgba(0,180,80,.18);border-color:#00cc66;color:#00cc66;':'');
+  btnPV.innerHTML=mmConfig.palpitesVisiveis?'👁️ Palpites visíveis — Ocultar':'🙈 Liberar palpites dos adversários';
+  btnPV.addEventListener('click',async()=>{
+    const novo=!mmConfig.palpitesVisiveis;
+    await setDoc(doc(db,'config','mmConfig'),{palpitesVisiveis:novo},{merge:true});
+    toast((novo?'👁️ Palpites liberados para todos!':'🙈 Palpites ocultados.'),'ok');
+  });
+
+  // Botão: encerrar/reabrir apostas
+  const btnEnc=document.createElement('button');
+  btnEnc.className='btn-sync-res';
+  btnEnc.style.cssText='flex:1;min-width:200px;'+( mmConfig.encerrado?'background:rgba(255,50,50,.15);border-color:#ff4444;color:#ff8888;':'');
+  btnEnc.innerHTML=mmConfig.encerrado?'🔓 Reabrir apostas':'🔒 Encerrar apostas';
+  btnEnc.addEventListener('click',()=>{
+    if(mmConfig.encerrado){
+      setDoc(doc(db,'config','mmConfig'),{encerrado:false},{merge:true});
+      toast('🔓 Apostas reabertas!','ok');
+    } else {
+      confirmar('Encerrar apostas do Mata-Mata? Participantes não poderão mais editar ou salvar palpites.',async()=>{
+        await setDoc(doc(db,'config','mmConfig'),{encerrado:true},{merge:true});
+        toast('🔒 Apostas encerradas!','ok');
+      });
+    }
+  });
+
+  ctrlBox.appendChild(btnPV);ctrlBox.appendChild(btnEnc);
+  cont.appendChild(ctrlBox);
 
   const jogosComResultado=mmJogos.filter(j=>typeof j.golsA==='number'&&typeof j.golsB==='number');
   const ranking=mmApostadores.map(ap=>{
