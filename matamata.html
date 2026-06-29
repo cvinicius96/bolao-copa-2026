@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bolão Copa 2026 — Mata-Mata</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070d07;--card:#0d1f0d;--card2:#111f11;--border:#1a3a1a;
+  --gold:#FFD700;--orange:#FFA500;--green:#006400;--green2:#00cc66;
+  --text:#e8f0e8;--muted:#6a8a6a;--red:#ff4444;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Roboto',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:60px;}
+
+/* HEADER */
+.header{background:linear-gradient(90deg,#001a00,var(--green),#001a00);padding:14px 16px;border-bottom:3px solid var(--gold);display:flex;align-items:center;justify-content:center;gap:10px;position:sticky;top:0;z-index:100;}
+.header h1{font-family:'Bebas Neue',cursive;font-size:1.4rem;color:var(--gold);letter-spacing:2px;}
+
+/* LOGIN / CADASTRO */
+#loginBox{max-width:400px;margin:40px auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 24px;}
+#loginBox h2{font-family:'Bebas Neue',cursive;color:var(--gold);font-size:1.6rem;letter-spacing:2px;text-align:center;margin-bottom:6px;}
+#loginBox p{color:var(--muted);font-size:.82rem;text-align:center;margin-bottom:22px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.field input{width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.95rem;outline:none;}
+.field input:focus{border-color:var(--gold);}
+.field .hint{font-size:.68rem;color:#4a6a4a;margin-top:4px;}
+.btn-gold{width:100%;background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;border:none;border-radius:8px;padding:13px;font-family:'Bebas Neue',cursive;font-size:1.1rem;letter-spacing:2px;cursor:pointer;margin-top:6px;}
+.btn-gold:hover{opacity:.9;}
+.err{color:var(--red);font-size:.8rem;text-align:center;margin-top:10px;display:none;}
+
+/* PROGRESSO */
+#progressoBar{display:none;background:#0a1a0a;border-bottom:1px solid var(--border);padding:10px 16px;}
+.prog-info{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.prog-nome{font-weight:700;font-size:.88rem;color:var(--gold);}
+.prog-count{font-family:'Bebas Neue',cursive;font-size:1.1rem;color:var(--gold);}
+.prog-track{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green2),var(--gold));transition:width .4s;}
+
+/* VIEW TABS */
+#viewTabs{display:none;max-width:600px;margin:14px auto 4px;padding:0 12px;gap:0;}
+.view-tab{flex:1;padding:10px;text-align:center;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.85rem;letter-spacing:1px;border:1px solid var(--border);background:var(--card2);color:var(--muted);transition:all .2s;}
+.view-tab:first-child{border-radius:8px 0 0 8px;}
+.view-tab:last-child{border-radius:0 8px 8px 0;border-left:none;}
+.view-tab.active{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border-color:var(--green2);}
+
+/* FORMULÁRIO */
+#formBox{display:none;max-width:600px;margin:0 auto;padding:12px 12px 80px;}
+#acertosBox{display:none;max-width:600px;margin:0 auto;padding:12px 12px 80px;}
+
+.grupo-header{font-family:'Bebas Neue',cursive;font-size:1rem;color:var(--gold);letter-spacing:3px;padding:10px 12px 6px;margin-top:8px;border-bottom:1px solid var(--border);}
+
+.jogo-card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;overflow:hidden;padding-bottom:10px;}
+.jogo-top{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px;}
+.jogo-num{font-size:.68rem;color:var(--muted);letter-spacing:.5px;}
+.jogo-data{font-size:.68rem;font-weight:700;}
+.jogo-times{display:flex;align-items:center;justify-content:center;gap:6px;padding:0 12px 10px;font-weight:700;font-size:.92rem;text-align:center;}
+.jogo-sep{color:var(--muted);font-size:.8rem;}
+
+/* PLACAR INPUT */
+.placar-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:4px 12px 8px;}
+.placar-input{width:56px;text-align:center;background:#0a1a0a;border:1.5px solid var(--border);border-radius:8px;color:var(--gold);font-family:'Bebas Neue',cursive;font-size:1.3rem;padding:6px 2px;outline:none;-moz-appearance:textfield;}
+.placar-input::-webkit-outer-spin-button,.placar-input::-webkit-inner-spin-button{-webkit-appearance:none;}
+.placar-input:focus{border-color:var(--gold);}
+.placar-input:disabled{opacity:.5;background:#080808;}
+
+/* ACERTOS */
+.acerto-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;}
+.acerto-jogo{flex:1;font-size:.82rem;font-weight:700;}
+.acerto-info{flex:1;display:flex;flex-direction:column;gap:2px;font-size:.7rem;color:var(--muted);}
+.acerto-emoji{font-size:1.2rem;}
+
+/* BOTÃO SALVAR FIXO */
+#btnSalvarFixed{position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;border:none;padding:16px;font-family:'Bebas Neue',cursive;font-size:1.2rem;letter-spacing:2px;cursor:pointer;z-index:200;display:none;box-shadow:0 -4px 20px rgba(0,0,0,.5);}
+
+/* TOAST */
+#toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#002200;border:1px solid var(--gold);color:var(--gold);padding:10px 20px;border-radius:8px;font-size:.85rem;font-weight:700;display:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center;}
+#toast.err{background:#220000;border-color:var(--red);color:var(--red);}
+#toast.info{background:#001122;border-color:#4488ff;color:#88aaff;}
+
+/* LOADING */
+#loading{display:none;text-align:center;padding:40px 20px;color:var(--muted);font-size:.9rem;}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,215,0,.15);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:380px){
+  .jogo-times{font-size:.82rem;}
+  .placar-input{width:48px;font-size:1.1rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span style="font-size:1.4rem;">🥊</span>
+  <h1>BOLÃO COPA 2026 — MATA-MATA</h1>
+</div>
+
+<div id="toast"></div>
+
+<!-- LOGIN / CADASTRO -->
+<div id="loginBox">
+  <h2>MATA-MATA</h2>
+  <p>Já participa do bolão? Entre com nome e senha.<br>Ainda não? Preencha tudo e seu cadastro é criado na hora.</p>
+  <div class="field">
+    <label>Seu nome</label>
+    <input type="text" id="inputNome" placeholder="Digite seu nome completo">
+  </div>
+  <div class="field">
+    <label>Senha</label>
+    <input type="password" id="inputSenha" placeholder="Senha atual ou crie uma nova">
+    <div class="hint">Se você já tem senha do bolão (fase de grupos) ou já participou do mata-mata, use a mesma. Se é seu primeiro acesso aqui, essa senha será criada agora.</div>
+  </div>
+  <div class="field">
+    <label>WhatsApp</label>
+    <input type="tel" id="inputTelefone" placeholder="(11) 99999-1234">
+    <div class="hint">Necessário apenas no primeiro cadastro.</div>
+  </div>
+  <button class="btn-gold" id="btnEntrar">🥊 ENTRAR / CADASTRAR</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  Carregando...
+</div>
+
+<!-- PROGRESSO -->
+<div id="progressoBar">
+  <div class="prog-info">
+    <span class="prog-nome" id="progNome"></span>
+    <span class="prog-count" id="progCount">0/0</span>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+</div>
+
+<!-- TABS DE VISÃO -->
+<div id="viewTabs" style="display:none;">
+  <div class="view-tab active" id="btnViewPalpites">🎯 Meus Palpites</div>
+  <div class="view-tab" id="btnViewAcertos">🏆 Meus Acertos</div>
+</div>
+
+<!-- FORMULÁRIO DE PALPITES -->
+<div id="formBox"></div>
+
+<!-- MEUS ACERTOS -->
+<div id="acertosBox"></div>
+
+<!-- BOTÃO SALVAR FIXO -->
+<button id="btnSalvarFixed">💾 SALVAR PALPITES</button>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js';
+import{getFirestore,doc,getDoc,setDoc,getDocs,collection}from'https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js';
+
+const firebaseConfig={
+  apiKey:"AIzaSyAuFiU9HuE8DnYMUkDJjJgJOJ5gYMSCvoY",
+  authDomain:"bolao-copa-2026-c8130.firebaseapp.com",
+  projectId:"bolao-copa-2026-c8130",
+  storageBucket:"bolao-copa-2026-c8130.firebasestorage.app",
+  messagingSenderId:"396642101963",
+  appId:"1:396642101963:web:1434cacef759837738494e"
+};
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+// =============================================
+// FASES DO MATA-MATA
+// =============================================
+const FASES=[
+  {id:'32avos',label:'32-AVOS DE FINAL'},
+  {id:'oitavas',label:'OITAVAS DE FINAL'},
+  {id:'quartas',label:'QUARTAS DE FINAL'},
+  {id:'semis',label:'SEMIFINAL'},
+  {id:'3lugar',label:'DISPUTA DE 3º LUGAR'},
+  {id:'final',label:'FINAL'},
+];
+
+// =============================================
+// ESTADO
+// =============================================
+let mmApostador=null;       // {id,nome,senha,contato,origemId}
+let mmJogos=[];              // [{id,fase,a,b,data,hora,golsA,golsB}]
+let palpites={};             // {jogoId:{a:N,b:N}}
+
+function toast(msg,tipo='ok'){
+  const t=document.getElementById('toast');
+  t.className=tipo==='err'?'err':tipo==='info'?'info':'';
+  t.textContent=msg;t.style.display='block';
+  clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3000);
+}
+
+function formatarTel(v){
+  v=v.replace(/\D/g,'');
+  if(v.length<=2)return v.length?'('+v:'';
+  if(v.length<=6)return '('+v.slice(0,2)+') '+v.slice(2);
+  if(v.length<=10)return '('+v.slice(0,2)+') '+v.slice(2,6)+'-'+v.slice(6);
+  return '('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7,11);
+}
+document.getElementById('inputTelefone').addEventListener('input',function(){this.value=formatarTel(this.value);});
+
+function parseKickoff(jogo){
+  if(!jogo.data)return null;
+  const partes=jogo.data.split('/').map(Number);
+  const dd=partes[0],mm=partes[1];
+  if(!dd||!mm)return null;
+  let hh=23,min=59;
+  if(jogo.hora){
+    const m=jogo.hora.match(/(\d{1,2})h(\d{0,2})/);
+    if(m){hh=parseInt(m[1],10);min=m[2]?parseInt(m[2],10):0;}
+  }
+  return new Date(2026,mm-1,dd,hh,min,0);
+}
+function jogoEncerrado(jogo){
+  const k=parseKickoff(jogo);
+  if(!k)return false;
+  return new Date()>=k;
+}
+
+function voltarLogin(msg){
+  document.getElementById('loading').style.display='none';
+  document.getElementById('loginBox').style.display='block';
+  const errEl=document.getElementById('loginErr');
+  errEl.textContent=msg;errEl.style.display='block';
+}
+
+// =============================================
+// LOGIN / CADASTRO
+// =============================================
+document.getElementById('btnEntrar').addEventListener('click', async()=>{
+  const nome=document.getElementById('inputNome').value.trim();
+  const senha=document.getElementById('inputSenha').value.trim();
+  const telefone=document.getElementById('inputTelefone').value.trim();
+  const errEl=document.getElementById('loginErr');
+  errEl.style.display='none';
+  if(!nome||!senha){errEl.textContent='Preencha nome e senha.';errEl.style.display='block';return;}
+
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('loading').style.display='block';
+
+  try{
+    const man=await getDoc(doc(db,'config','manutencao'));
+    if(man.exists()&&man.data().ativo){
+      voltarLogin('Sistema em manutenção. Tente novamente em breve.');
+      return;
+    }
+
+    const snap=await getDocs(collection(db,'mmApostadores'));
+    const lista=snap.docs.map(d=>({id:d.id,...d.data()}));
+    const existente=lista.find(a=>a.nome.toLowerCase()===nome.toLowerCase());
+
+    if(existente){
+      const senhaEsperada=(existente.senha&&existente.senha.trim())?existente.senha.trim():'2026';
+      if(senha!==senhaEsperada){
+        voltarLogin('Senha incorreta.');
+        return;
+      }
+      if(telefone&&telefone!==existente.contato){
+        try{await setDoc(doc(db,'mmApostadores',existente.id),{contato:telefone},{merge:true});}catch(e){}
+        existente.contato=telefone;
+      }
+      mmApostador=existente;
+    } else {
+      if(!telefone){
+        voltarLogin('Nome não encontrado. Para criar seu cadastro, informe também o WhatsApp.');
+        return;
+      }
+      if(senha.length<4){
+        voltarLogin('Crie uma senha com pelo menos 4 caracteres.');
+        return;
+      }
+      const novoRef=doc(collection(db,'mmApostadores'));
+      const novoDados={nome,senha,contato:telefone,origemId:'',criadoEm:Date.now()};
+      await setDoc(novoRef,novoDados);
+      mmApostador={id:novoRef.id,...novoDados};
+    }
+
+    const cfgJogos=await getDoc(doc(db,'config','mmJogos'));
+    mmJogos=(cfgJogos.exists()&&cfgJogos.data().lista)?cfgJogos.data().lista:[];
+
+    const apDoc=await getDoc(doc(db,'mmApostas',mmApostador.id));
+    if(apDoc.exists()&&apDoc.data().palpites)palpites={...apDoc.data().palpites};
+
+    document.getElementById('loading').style.display='none';
+    iniciarApp();
+    if(!existente)toast('🎉 Cadastro criado! Bem-vindo(a), '+mmApostador.nome+'!','ok');
+
+  }catch(e){
+    console.error(e);
+    voltarLogin('Erro de conexão. Verifique sua internet.');
+  }
+});
+
+function iniciarApp(){
+  document.getElementById('progNome').textContent=mmApostador.nome;
+  document.getElementById('progressoBar').style.display='block';
+  document.getElementById('viewTabs').style.display='flex';
+  mostrarPalpites();
+}
+
+// =============================================
+// TABS DE VISÃO
+// =============================================
+document.getElementById('btnViewPalpites').addEventListener('click',mostrarPalpites);
+document.getElementById('btnViewAcertos').addEventListener('click',mostrarAcertos);
+
+function mostrarPalpites(){
+  document.getElementById('btnViewPalpites').classList.add('active');
+  document.getElementById('btnViewAcertos').classList.remove('active');
+  document.getElementById('acertosBox').style.display='none';
+  document.getElementById('formBox').style.display='block';
+  document.getElementById('btnSalvarFixed').style.display='block';
+  renderFormulario();
+}
+function mostrarAcertos(){
+  document.getElementById('btnViewPalpites').classList.remove('active');
+  document.getElementById('btnViewAcertos').classList.add('active');
+  document.getElementById('formBox').style.display='none';
+  document.getElementById('btnSalvarFixed').style.display='none';
+  renderAcertos();
+}
+
+function atualizarProgresso(){
+  const feitos=Object.keys(palpites).filter(k=>{
+    const p=palpites[k];
+    return p&&p.a!==''&&p.a!==undefined&&p.a!==null&&p.b!==''&&p.b!==undefined&&p.b!==null;
+  }).length;
+  const total=mmJogos.length;
+  const pct=total?Math.round(feitos/total*100):0;
+  document.getElementById('progCount').textContent=feitos+'/'+total;
+  document.getElementById('progFill').style.width=pct+'%';
+}
+
+// =============================================
+// FORMULÁRIO DE PALPITES (placar)
+// =============================================
+function renderFormulario(){
+  const formBox=document.getElementById('formBox');
+  formBox.innerHTML='';
+  if(!mmJogos.length){
+    formBox.innerHTML='<p style="text-align:center;color:var(--muted);padding:30px 16px;line-height:1.6;">⏳ Os confrontos do mata-mata ainda não foram cadastrados.<br>Volte aqui quando a fase de grupos terminar!</p>';
+    atualizarProgresso();
+    return;
+  }
+  FASES.forEach(f=>{
+    const jogosFase=mmJogos.filter(j=>j.fase===f.id);
+    if(!jogosFase.length)return;
+    const h=document.createElement('div');h.className='grupo-header';h.textContent=f.label;formBox.appendChild(h);
+    jogosFase.forEach(j=>{
+      const encerrado=jogoEncerrado(j);
+      const card=document.createElement('div');card.className='jogo-card';
+
+      const top=document.createElement('div');top.className='jogo-top';
+      const dataTxt=j.data?('📅 '+j.data+(j.hora?' • '+j.hora:'')):'data a definir';
+      top.innerHTML='<span class="jogo-num">'+dataTxt+'</span>'+(encerrado?'<span class="jogo-data" style="color:#ff8844;">🔒 Encerrado</span>':'');
+      card.appendChild(top);
+
+      const times=document.createElement('div');times.className='jogo-times';
+      times.innerHTML='<span>'+j.a+'</span><span class="jogo-sep">×</span><span>'+j.b+'</span>';
+      card.appendChild(times);
+
+      const pal=palpites[j.id]||{};
+      const placarRow=document.createElement('div');placarRow.className='placar-row';
+      placarRow.innerHTML=
+        '<input type="number" min="0" max="20" class="placar-input" id="pa_'+j.id+'" value="'+(pal.a===undefined||pal.a===null?'':pal.a)+'" '+(encerrado?'disabled':'')+'>'
+        +'<span class="jogo-sep">×</span>'
+        +'<input type="number" min="0" max="20" class="placar-input" id="pb_'+j.id+'" value="'+(pal.b===undefined||pal.b===null?'':pal.b)+'" '+(encerrado?'disabled':'')+'>';
+      card.appendChild(placarRow);
+
+      if(typeof j.golsA==='number'&&typeof j.golsB==='number'){
+        const resEl=document.createElement('div');
+        resEl.style.cssText='text-align:center;font-size:.72rem;color:var(--green2);padding:0 0 8px;';
+        resEl.textContent='✔ Resultado real: '+j.golsA+' × '+j.golsB;
+        card.appendChild(resEl);
+      }
+
+      if(!encerrado){
+        card.querySelector('#pa_'+j.id).addEventListener('input',e=>atualizarPalpite(j.id,'a',e.target.value));
+        card.querySelector('#pb_'+j.id).addEventListener('input',e=>atualizarPalpite(j.id,'b',e.target.value));
+      }
+      formBox.appendChild(card);
+    });
+  });
+  atualizarProgresso();
+}
+
+function atualizarPalpite(jid,lado,val){
+  if(!palpites[jid])palpites[jid]={a:'',b:''};
+  palpites[jid][lado]=val===''?'':parseInt(val,10);
+  atualizarProgresso();
+}
+
+document.getElementById('btnSalvarFixed').addEventListener('click',salvarPalpites);
+async function salvarPalpites(){
+  const limpos={};
+  Object.entries(palpites).forEach(([jid,v])=>{
+    if(v&&v.a!==''&&v.a!==undefined&&v.a!==null&&v.b!==''&&v.b!==undefined&&v.b!==null&&!isNaN(v.a)&&!isNaN(v.b)){
+      limpos[jid]={a:Number(v.a),b:Number(v.b)};
+    }
+  });
+  const btn=document.getElementById('btnSalvarFixed');
+  btn.textContent='⏳ SALVANDO...';btn.disabled=true;
+  try{
+    await setDoc(doc(db,'mmApostas',mmApostador.id),{palpites:limpos},{merge:true});
+    palpites=limpos;
+    toast('💾 Palpites salvos com sucesso!','ok');
+  }catch(e){
+    toast('Erro ao salvar. Verifique sua conexão.','err');
+    console.error(e);
+  }
+  btn.textContent='💾 SALVAR PALPITES';btn.disabled=false;
+}
+
+// =============================================
+// MEUS ACERTOS
+// =============================================
+async function renderAcertos(){
+  const box=document.getElementById('acertosBox');
+  box.style.display='block';
+  box.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px;">Carregando...</p>';
+
+  if(!mmJogos.length){
+    box.innerHTML='<p style="text-align:center;color:var(--muted);padding:30px 16px;">Ainda não há jogos cadastrados.</p>';
+    return;
+  }
+
+  const jogosComResultado=mmJogos.filter(j=>typeof j.golsA==='number'&&typeof j.golsB==='number');
+  let pts=0;
+  const linhas=mmJogos.map(j=>{
+    const pal=palpites[j.id];
+    const temResultado=typeof j.golsA==='number'&&typeof j.golsB==='number';
+    let status='pendente';
+    if(temResultado){
+      if(pal&&typeof pal.a==='number'&&typeof pal.b==='number'&&pal.a===j.golsA&&pal.b===j.golsB){status='acerto';pts++;}
+      else status='erro';
+    }
+    return{j,pal,status,temResultado};
+  });
+
+  let posicaoTxt='';
+  try{
+    const [snapAp,snapApostas]=await Promise.all([getDocs(collection(db,'mmApostadores')),getDocs(collection(db,'mmApostas'))]);
+    const todosAp=snapAp.docs.map(d=>({id:d.id,...d.data()}));
+    const todasApostas={};snapApostas.docs.forEach(d=>{todasApostas[d.id]=d.data().palpites||{};});
+    const ranking=todosAp.map(ap=>{
+      const pl=todasApostas[ap.id]||{};
+      let p=0;
+      mmJogos.forEach(j=>{
+        if(typeof j.golsA==='number'&&typeof j.golsB==='number'&&pl[j.id]&&pl[j.id].a===j.golsA&&pl[j.id].b===j.golsB)p++;
+      });
+      return{id:ap.id,pts:p};
+    }).sort((a,b)=>b.pts-a.pts);
+    const minhaPos=ranking.findIndex(r=>r.id===mmApostador.id)+1;
+    if(minhaPos>0)posicaoTxt=minhaPos+'º de '+ranking.length;
+  }catch(e){console.error(e);}
+
+  box.innerHTML='';
+  const resumo=document.createElement('div');
+  resumo.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;text-align:center;';
+  resumo.innerHTML='<div style="font-family:\'Bebas Neue\',cursive;font-size:2.4rem;color:var(--gold);">'+pts+' pt'+(pts!==1?'s':'')+'</div>'
+    +'<div style="font-size:.78rem;color:var(--muted);margin-top:2px;">'+jogosComResultado.length+' de '+mmJogos.length+' jogo(s) com resultado'+(posicaoTxt?' • Posição: '+posicaoTxt:'')+'</div>';
+  box.appendChild(resumo);
+
+  FASES.forEach(f=>{
+    const doFase=linhas.filter(l=>l.j.fase===f.id);
+    if(!doFase.length)return;
+    const h=document.createElement('div');h.className='grupo-header';h.textContent=f.label;box.appendChild(h);
+    doFase.forEach(l=>{
+      const row=document.createElement('div');row.className='acerto-row';
+      const emoji=l.status==='acerto'?'✅':l.status==='erro'?'❌':'⏳';
+      const palTxt=(l.pal&&l.pal.a!==''&&l.pal.a!==undefined&&l.pal.a!==null)?l.pal.a+' × '+l.pal.b:'sem palpite';
+      const resTxt=l.temResultado?l.j.golsA+' × '+l.j.golsB:'aguardando';
+      row.innerHTML='<div class="acerto-jogo">'+l.j.a+' × '+l.j.b+'</div>'
+        +'<div class="acerto-info"><span>Seu palpite: '+palTxt+'</span><span>Resultado: '+resTxt+'</span></div>'
+        +'<div class="acerto-emoji">'+emoji+'</div>';
+      box.appendChild(row);
+    });
+  });
+}
+
+// Enter / navegação entre campos do login
+document.getElementById('inputNome').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inputSenha').focus();});
+document.getElementById('inputSenha').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('inputTelefone').focus();});
+document.getElementById('inputTelefone').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('btnEntrar').click();});
+</script>
+</body>
+</html>

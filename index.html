@@ -162,6 +162,39 @@ h1,h2,h3{font-family:'Bebas Neue',cursive;}
 #editBox label{color:#888;font-size:.8rem;display:block;margin-bottom:4px;}
 #editBox input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.95rem;margin-bottom:12px;}
 #editBox input:focus{outline:none;border-color:var(--amarelo);}
+
+/* ===== MATA-MATA ===== */
+#mmEditModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;align-items:center;justify-content:center;padding:16px;}
+#mmEditModal.show{display:flex;}
+#mmEditBox{background:#0f2a0f;border:2px solid var(--amarelo);border-radius:16px;padding:24px 20px;max-width:340px;width:100%;}
+#mmEditBox h3{font-family:'Bebas Neue',cursive;color:var(--amarelo);font-size:1.3rem;margin-bottom:16px;text-align:center;}
+#mmEditBox label{color:#888;font-size:.8rem;display:block;margin-bottom:4px;}
+#mmEditBox input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.95rem;margin-bottom:12px;}
+#mmEditBox input:focus{outline:none;border-color:var(--amarelo);}
+.mm-subtabs{display:flex;gap:0;margin-bottom:16px;background:#0a1a0a;border-radius:10px;padding:4px;border:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.mm-subtabs::-webkit-scrollbar{display:none;}
+.mm-subtab{flex:1;padding:8px 10px;text-align:center;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.8rem;letter-spacing:1px;color:#555;border-radius:7px;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.mm-subtab.active{background:linear-gradient(135deg,var(--verde),#004d00);color:var(--amarelo);}
+.mm-subpanel{display:none;}
+.mm-subpanel.active{display:block;}
+.mm-jogo-row{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}
+.mm-jogo-row input{background:#0a1a0a;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.8rem;padding:6px 8px;}
+.mm-jogo-row input.mm-time{flex:1;min-width:90px;}
+.mm-jogo-row input.mm-data{width:60px;}
+.mm-jogo-row input.mm-hora{width:54px;}
+.mm-jogo-row input.mm-gol{width:42px;text-align:center;color:var(--amarelo);font-family:'Bebas Neue',cursive;font-size:.9rem;}
+.mm-jogo-row .mm-x{color:#666;font-size:.75rem;}
+.mm-jogo-row .mm-del{background:none;border:none;color:#ff6666;cursor:pointer;font-size:.95rem;padding:2px 6px;}
+.mm-add-form{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.mm-add-form input,.mm-add-form select{background:#0a1a0a;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.82rem;padding:8px 10px;}
+.mm-add-form select{flex:0 0 130px;}
+.mm-add-form input.mm-time{flex:1;min-width:100px;}
+.mm-add-form input.mm-data,.mm-add-form input.mm-hora{width:64px;}
+.mm-badge-origem{font-size:.65rem;padding:2px 8px;border-radius:10px;background:rgba(68,136,255,.15);color:#88aaff;border:1px solid #223366;display:inline-block;margin-top:4px;}
+.mm-badge-novo{font-size:.65rem;padding:2px 8px;border-radius:10px;background:rgba(0,180,80,.15);color:#00cc66;border:1px solid #006633;display:inline-block;margin-top:4px;}
+.btn-migrar-mm{background:rgba(255,100,0,.12);color:#ff8844;border:1px solid #883300;border-radius:8px;padding:6px 10px;font-size:.7rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.btn-migrar-mm:hover{background:rgba(255,100,0,.22);}
+.btn-migrar-mm.feito{background:rgba(0,180,80,.12);color:#00cc66;border-color:#006633;cursor:default;}
 .edit-btns{display:flex;gap:8px;margin-top:4px;}
 .btn-salvar-edit{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;border:none;border-radius:8px;padding:10px;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.95rem;flex:1;}
 .btn-cancel-edit{background:transparent;color:#aaa;border:1px solid #555;border-radius:8px;padding:10px;cursor:pointer;font-size:.95rem;flex:1;}
@@ -565,6 +598,31 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
   </div>
 </div>
 
+<!-- Modal editar participante MATA-MATA -->
+<div id="mmEditModal">
+  <div id="mmEditBox">
+    <h3>🥊 EDITAR PARTICIPANTE</h3>
+    <label>Nome</label>
+    <input type="text" id="mmEditNome" placeholder="Nome do participante">
+    <label>WhatsApp</label>
+    <input type="tel" id="mmEditContato" placeholder="(11) 99999-1234">
+    <label>Senha de acesso</label>
+    <div style="background:#0a1a0a;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:.75rem;color:#888;">Senha atual:</span>
+      <span id="mmEditSenhaAtual" style="font-family:'Bebas Neue',cursive;font-size:1.3rem;color:var(--amarelo);letter-spacing:3px;">—</span>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center;margin-bottom:12px;">
+      <input type="text" id="mmEditSenha" placeholder="Nova senha (deixe vazio para manter)" style="flex:1;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.95rem;">
+      <button type="button" id="mmGerarSenhaBtn" style="white-space:nowrap;padding:10px 12px;border-radius:8px;background:rgba(255,215,0,.15);border:1px solid rgba(255,215,0,.4);color:var(--amarelo);cursor:pointer;font-size:.8rem;">🎲 Gerar</button>
+    </div>
+    <div class="edit-btns">
+      <button class="btn-cancel-edit" id="mmEditCancelar">Cancelar</button>
+      <button class="btn-salvar-edit" id="mmEditSalvar">💾 Salvar</button>
+    </div>
+    <button id="mmEditRemover" style="width:100%;margin-top:10px;background:#cc2200;color:#fff;border:none;border-radius:8px;padding:10px;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.95rem;">🗑️ REMOVER PARTICIPANTE</button>
+  </div>
+</div>
+
 <!-- Badge Conexão -->
 <div class="conn-badge online" id="connBadge">
   <div class="conn-dot"></div>
@@ -835,6 +893,19 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
       <div id="estatisticasParticipanteConteudo"></div>
     </div>
 
+    <div class="tab-content" id="tab-mata-mata">
+      <h2 class="section-title">🥊 MATA-MATA</h2>
+      <p class="section-sub">Fase eliminatória — palpite de placar exato vale 1 ponto</p>
+      <div class="mm-subtabs" id="mmSubtabs">
+        <div class="mm-subtab active" data-mmsub="participantes">👥 Participantes</div>
+        <div class="mm-subtab" data-mmsub="jogos">⚽ Jogos &amp; Resultados</div>
+        <div class="mm-subtab" data-mmsub="resumo">🏆 Resumo de Acertos</div>
+      </div>
+      <div class="mm-subpanel active" id="mmsub-participantes"></div>
+      <div class="mm-subpanel" id="mmsub-jogos"></div>
+      <div class="mm-subpanel" id="mmsub-resumo"></div>
+    </div>
+
   </div>
 </div>
 
@@ -952,10 +1023,21 @@ const JOGOS=[
   {id:'L6',g:'L',a:'Panamá',b:'Inglaterra',d:'27/06',h:'18h'},
 ];
 const GRUPOS=[...new Set(JOGOS.map(j=>j.g))];
+const FASES_MM=[
+  {id:'32avos',label:'32-AVOS DE FINAL'},
+  {id:'oitavas',label:'OITAVAS DE FINAL'},
+  {id:'quartas',label:'QUARTAS DE FINAL'},
+  {id:'semis',label:'SEMIFINAL'},
+  {id:'3lugar',label:'DISPUTA DE 3º LUGAR'},
+  {id:'final',label:'FINAL'},
+];
 function getDatas(){return[...new Set(JOGOS.map(j=>j.d))].sort((a,b)=>{const[da,ma]=a.split('/').map(Number);const[db,mb]=b.split('/').map(Number);return ma!==mb?ma-mb:da-db;});}
 function toMin(h){const p=h.replace('h','').split(':');return Number(p[0])*60+(Number(p[1])||0);}
 
 let currentUser=null,isAdmin=false,apostadores=[],apostas={},resultados={};
+let mmApostadores=[],mmApostas={},mmJogos=[],mmJogosEdit=[];
+let mmEditApId=null;
+let mmPainelAtivo='participantes';
 let editPago=false;
 let bolaoConfig={palpitesVisiveis:false,encerrado:false};
 let jModo='grupo',jFiltro='TODOS',rModo='grupo',rFiltro='TODOS';
@@ -986,6 +1068,9 @@ async function loadData(){
         if(cfg&&cfg.dataFinal){DATA_FINAL=new Date(cfg.dataFinal+'T23:59:59');DATA_FINAL_STR=cfg.dataFinalStr||cfg.dataFinal;}
         if(cfg){bolaoConfig.palpitesVisiveis=cfg.palpitesVisiveis===true;bolaoConfig.encerrado=cfg.encerrado===true;}
         const r=await fbGet('config','resultados');resultados=r?r.votos||{}:{};
+        mmApostadores=await fbList('mmApostadores');
+        const mmAp=await fbList('mmApostas');mmApostas={};mmAp.forEach(a=>{mmApostas[a.id]=a.palpites||{};});
+        const mmJ=await fbGet('config','mmJogos');mmJogos=mmJ?mmJ.lista||[]:[];
       })(),
       timeout
     ]);
@@ -1040,6 +1125,22 @@ function iniciarSync(){
     if(t&&t.dataset.tab==='dashboard')renderDashboard();
     if(t&&t.dataset.tab==='palpites-grupo')renderPalpitesGrupo();
     if(t&&t.dataset.tab==='estatisticas')renderDashEstatisticas('estatisticasParticipanteConteudo');
+  });
+  onSnapshot(collection(db,'mmApostadores'),s=>{
+    mmApostadores=s.docs.map(d=>({id:d.id,...d.data()}));
+    renderApostadores();
+    const t=document.querySelector('.tab.active');
+    if(t&&t.dataset.tab==='mata-mata'&&mmPainelAtivo==='participantes')renderMMParticipantes();
+  });
+  onSnapshot(collection(db,'mmApostas'),s=>{
+    mmApostas={};s.docs.forEach(d=>{mmApostas[d.id]=d.data().palpites||{};});
+    const t=document.querySelector('.tab.active');
+    if(t&&t.dataset.tab==='mata-mata'&&mmPainelAtivo==='resumo')renderMMResumo();
+  });
+  onSnapshot(doc(db,'config','mmJogos'),s=>{
+    mmJogos=s.exists()?s.data().lista||[]:[];
+    const t=document.querySelector('.tab.active');
+    if(t&&t.dataset.tab==='mata-mata'&&mmPainelAtivo==='resumo')renderMMResumo();
   });
 }
 
@@ -1105,7 +1206,7 @@ function startApp(){
 function buildTabs(){
   const bar=document.getElementById('tabsBar');bar.innerHTML='';
   const list=isAdmin
-    ?[{id:'dashboard',l:'📈 Dashboard'},{id:'jogos',l:'📅 Jogos'},{id:'apostadores',l:'👥 Apostadores'},{id:'apostas',l:'🎯 Apostas'},{id:'resultados',l:'📊 Resultados'},{id:'palpites-grupo',l:'👀 Palpites'},{id:'comunicacao',l:'📢 Comunicação'},{id:'ranking',l:'🏅 Ranking'},{id:'classificacao',l:'🏟️ Classificação'},{id:'configuracoes',l:'⚙️ Config'}]
+    ?[{id:'dashboard',l:'📈 Dashboard'},{id:'jogos',l:'📅 Jogos'},{id:'apostadores',l:'👥 Apostadores'},{id:'apostas',l:'🎯 Apostas'},{id:'resultados',l:'📊 Resultados'},{id:'palpites-grupo',l:'👀 Palpites'},{id:'mata-mata',l:'🥊 Mata-Mata'},{id:'comunicacao',l:'📢 Comunicação'},{id:'ranking',l:'🏅 Ranking'},{id:'classificacao',l:'🏟️ Classificação'},{id:'configuracoes',l:'⚙️ Config'}]
     :(()=>{const tabs=[{id:'minha-conta',l:'👤 Minha Conta'},{id:'jogos',l:'📅 Jogos'},{id:'apostas',l:'🎯 Apostas'},{id:'ranking',l:'🏅 Ranking'},{id:'classificacao',l:'🏟️ Classificação'}];if(bolaoConfig.palpitesVisiveis){tabs.push({id:'estatisticas',l:'📈 Estatísticas'});tabs.push({id:'palpites-grupo',l:'👀 Palpites'});}return tabs;})();
   list.forEach(t=>{const d=document.createElement('div');d.className='tab';d.dataset.tab=t.id;d.textContent=t.l;d.addEventListener('click',()=>openTab(t.id));bar.appendChild(d);});
 }
@@ -1121,6 +1222,7 @@ function openTab(id){
   if(id==='classificacao')renderClassificacao();
   if(id==='palpites-grupo')renderPalpitesGrupo();
   if(id==='estatisticas')renderDashEstatisticas('estatisticasParticipanteConteudo');
+  if(id==='mata-mata')renderMataMata();
 }
 
 // JOGOS
@@ -1200,12 +1302,31 @@ function renderApostadores(){
     const bv=document.createElement('button');bv.className='btn-boas-vindas';bv.textContent='👋 Boas-vindas';
     bv.addEventListener('click',()=>enviarBoasVindas(ap));
 
+    // Migrar para Mata-Mata
+    const jaMigrado=mmApostadores.some(m=>m.origemId===ap.id);
+    const mm=document.createElement('button');
+    mm.className='btn-migrar-mm'+(jaMigrado?' feito':'');
+    mm.textContent=jaMigrado?'✅ No Mata-Mata':'🥊 Mata-Mata';
+    if(jaMigrado)mm.disabled=true;
+    else mm.addEventListener('click',()=>migrarParaMataMata(ap));
+
     if(ap.contato){const ct=document.createElement('div');ct.className='apostador-contato';ct.textContent='📱 '+ap.contato;card.appendChild(av);card.appendChild(nm);card.appendChild(ct);card.appendChild(pw);}
     else{card.appendChild(av);card.appendChild(nm);card.appendChild(pw);}
     card.appendChild(pagBadge);
-    card.appendChild(eng);card.appendChild(drop);card.appendChild(bv);
+    card.appendChild(eng);card.appendChild(drop);card.appendChild(bv);card.appendChild(mm);
     grid.appendChild(card);
   });
+}
+
+async function migrarParaMataMata(ap){
+  if(mmApostadores.some(m=>m.origemId===ap.id)){toast('Já migrado para o Mata-Mata!','info');return;}
+  try{
+    const novoRef=doc(collection(db,'mmApostadores'));
+    await setDoc(novoRef,{nome:ap.nome,senha:(ap.senha&&ap.senha.trim())?ap.senha.trim():'2026',contato:ap.contato||'',origemId:ap.id,criadoEm:Date.now()});
+    toast('🥊 '+ap.nome+' migrado para o Mata-Mata!','ok');
+  }catch(e){
+    toast('Erro ao migrar: '+e.message,'err');
+  }
 }
 
 // Modal editar
@@ -2332,6 +2453,318 @@ function renderDashEstatisticas(containerId){
     rank.forEach((r,i)=>{const row=document.createElement('div');row.className='ranking-stat-row';const cor=i===0?'#FFD700':i===1?'#aaa':i===2?'#cd7f32':'#888';const emoji=['🥇','🥈','🥉'][i]||(i+1)+'º';const pctAcerto=jogosComRes>0?Math.round(r.ac/jogosComRes*100):0;row.innerHTML='<div class="ranking-stat-pos">'+emoji+'</div><div class="ranking-stat-nome">'+r.nome+'</div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+Math.round(r.pts/maxPts*100)+'%;background:'+cor+';"></div></div><div style="text-align:right;min-width:80px;"><div class="ranking-stat-val" style="color:'+cor+';">'+r.pts+'pts</div><div style="font-size:.65rem;color:#888;">'+r.ac+' acertos • '+pctAcerto+'%</div></div>';rk.appendChild(row);});
     cont.appendChild(rk);
   }
+}
+
+// ===== MATA-MATA (ADMIN) =====
+function renderMataMata(painel){
+  mmPainelAtivo=painel||mmPainelAtivo||'participantes';
+  document.querySelectorAll('#mmSubtabs .mm-subtab').forEach(b=>b.classList.toggle('active',b.dataset.mmsub===mmPainelAtivo));
+  document.querySelectorAll('.mm-subpanel').forEach(p=>p.classList.toggle('active',p.id==='mmsub-'+mmPainelAtivo));
+  if(mmPainelAtivo==='participantes')renderMMParticipantes();
+  else if(mmPainelAtivo==='jogos')renderMMJogos();
+  else if(mmPainelAtivo==='resumo')renderMMResumo();
+}
+document.getElementById('mmSubtabs').addEventListener('click',e=>{
+  const btn=e.target.closest('.mm-subtab');
+  if(!btn)return;
+  renderMataMata(btn.dataset.mmsub);
+});
+
+function renderMMParticipantes(){
+  const cont=document.getElementById('mmsub-participantes');
+  cont.innerHTML='<p style="font-size:.78rem;color:#888;margin-bottom:14px;">Participantes entram migrando pela aba <strong>Apostadores</strong> (botão 🥊) ou se cadastrando direto pelo link <code style="color:var(--amarelo);">matamata.html</code>.</p>';
+  if(!mmApostadores.length){
+    cont.innerHTML+='<p style="color:#666;text-align:center;padding:20px;">Nenhum participante no Mata-Mata ainda.</p>';
+    return;
+  }
+  document.addEventListener('click',()=>{document.querySelectorAll('.dropdown-menu.open').forEach(d=>d.classList.remove('open'));},{once:false});
+  const grid=document.createElement('div');grid.className='apostador-grid';
+  mmApostadores.slice().sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(ap=>{
+    const card=document.createElement('div');card.className='apostador-card';
+    const av=document.createElement('div');av.className='apostador-avatar';av.textContent=ap.nome[0].toUpperCase();
+    const nm=document.createElement('div');nm.className='apostador-nome';nm.textContent=ap.nome;
+    const origemBadge=document.createElement('div');
+    origemBadge.className=ap.origemId?'mm-badge-origem':'mm-badge-novo';
+    origemBadge.textContent=ap.origemId?'🔄 Migrado do bolão':'🆕 Cadastro próprio';
+
+    const eng=document.createElement('button');eng.className='btn-engrenagem';eng.textContent='⚙️';eng.title='Gerenciar';
+    const drop=document.createElement('div');drop.className='dropdown-menu';
+    drop.innerHTML='<div class="dropdown-item" data-action="editar">✏️ Editar dados</div><div class="dropdown-item" data-action="remover" style="color:#ff6666;">🗑️ Remover</div>';
+    eng.addEventListener('click',e=>{e.stopPropagation();document.querySelectorAll('.dropdown-menu.open').forEach(d=>d.classList.remove('open'));drop.classList.toggle('open');});
+    drop.addEventListener('click',e=>{
+      e.stopPropagation();
+      const action=e.target.dataset.action;
+      drop.classList.remove('open');
+      if(action==='editar')abrirMMEditModal(ap);
+      else if(action==='remover')confirmar('Remover "'+ap.nome+'" do Mata-Mata? Os palpites dele serão perdidos.',async()=>{await fbDel('mmApostadores',ap.id);await fbDel('mmApostas',ap.id);toast('🗑️ '+ap.nome+' removido do Mata-Mata!','ok');});
+    });
+
+    if(ap.contato){const ct=document.createElement('div');ct.className='apostador-contato';ct.textContent='📱 '+ap.contato;card.appendChild(av);card.appendChild(nm);card.appendChild(ct);}
+    else{card.appendChild(av);card.appendChild(nm);}
+    card.appendChild(origemBadge);
+    card.appendChild(eng);card.appendChild(drop);
+    grid.appendChild(card);
+  });
+  cont.appendChild(grid);
+}
+
+function abrirMMEditModal(ap){
+  mmEditApId=ap.id;
+  document.getElementById('mmEditNome').value=ap.nome||'';
+  document.getElementById('mmEditContato').value=ap.contato||'';
+  document.getElementById('mmEditSenha').value='';
+  document.getElementById('mmEditSenhaAtual').textContent=(ap.senha&&ap.senha.trim())?ap.senha.trim():'2026';
+  document.getElementById('mmEditModal').classList.add('show');
+}
+document.getElementById('mmEditCancelar').addEventListener('click',()=>{document.getElementById('mmEditModal').classList.remove('show');mmEditApId=null;});
+document.getElementById('mmEditSalvar').addEventListener('click',async()=>{
+  const nome=document.getElementById('mmEditNome').value.trim();
+  const contato=document.getElementById('mmEditContato').value.trim();
+  if(!nome){toast('Digite um nome!','err');return;}
+  if(mmApostadores.find(a=>a.id!==mmEditApId&&a.nome.toLowerCase()===nome.toLowerCase())){toast('Nome já existe no Mata-Mata!','err');return;}
+  const senhaEdit=document.getElementById('mmEditSenha').value.trim();
+  const dadosEdit={nome,contato};
+  if(senhaEdit)dadosEdit.senha=senhaEdit;
+  await fbSet('mmApostadores',mmEditApId,dadosEdit);
+  document.getElementById('mmEditModal').classList.remove('show');
+  mmEditApId=null;toast('✅ Dados atualizados!','ok');
+});
+document.getElementById('mmEditRemover').addEventListener('click',()=>{
+  const ap=mmApostadores.find(a=>a.id===mmEditApId);if(!ap)return;
+  document.getElementById('mmEditModal').classList.remove('show');
+  confirmar('Remover "'+ap.nome+'" do Mata-Mata? Os palpites dele serão perdidos.',async()=>{await fbDel('mmApostadores',ap.id);await fbDel('mmApostas',ap.id);toast('🗑️ '+ap.nome+' removido!','ok');mmEditApId=null;});
+});
+document.getElementById('mmGerarSenhaBtn').addEventListener('click',()=>{
+  const tel=document.getElementById('mmEditContato').value.replace(/\D/g,'');
+  const s=tel.length>=4?tel.slice(-4):Math.floor(1000+Math.random()*9000).toString();
+  document.getElementById('mmEditSenha').value=s;
+});
+document.getElementById('mmEditContato').addEventListener('input',function(){this.value=formatarTel(this.value);});
+
+// ----- Jogos & Resultados -----
+function renderMMJogos(){
+  const cont=document.getElementById('mmsub-jogos');
+  cont.innerHTML='';
+  mmJogosEdit=mmJogos.map(j=>({...j}));
+
+  const syncBox=document.createElement('div');
+  syncBox.style.cssText='background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;';
+  syncBox.innerHTML='<div style="font-size:.8rem;font-weight:700;margin-bottom:4px;">🔄 Sincronização automática</div>'
+    +'<div style="font-size:.72rem;color:#888;margin-bottom:10px;">Busca confrontos e resultados do mata-mata na football-data.org. Só traz algo depois que os jogos existirem na API (geralmente após o fim da fase de grupos).</div>'
+    +'<button class="btn-sync-res" id="btnSyncMM">🔄 BUSCAR/ATUALIZAR VIA API</button>'
+    +'<div class="sync-status" id="mmSyncStatus" style="display:none;"></div>'
+    +'<div class="sync-log" id="mmSyncLog"></div>';
+  cont.appendChild(syncBox);
+  document.getElementById('btnSyncMM').addEventListener('click',sincronizarMMJogos);
+
+  const addForm=document.createElement('div');addForm.className='mm-add-form';
+  addForm.innerHTML='<select id="mmNovaFase">'+FASES_MM.map(f=>'<option value="'+f.id+'">'+f.label+'</option>').join('')+'</select>'
+    +'<input type="text" class="mm-time" id="mmNovoA" placeholder="Time A">'
+    +'<input type="text" class="mm-time" id="mmNovoB" placeholder="Time B">'
+    +'<input type="text" class="mm-data" id="mmNovoData" placeholder="dd/mm">'
+    +'<input type="text" class="mm-hora" id="mmNovoHora" placeholder="hh h">'
+    +'<button id="btnAddMMJogo" style="background:rgba(0,180,80,.15);border:1px solid #006633;color:#00cc66;border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.8rem;font-weight:700;">+ Adicionar</button>';
+  cont.appendChild(addForm);
+  document.getElementById('btnAddMMJogo').addEventListener('click',()=>{
+    const fase=document.getElementById('mmNovaFase').value;
+    const a=document.getElementById('mmNovoA').value.trim();
+    const b=document.getElementById('mmNovoB').value.trim();
+    const data=document.getElementById('mmNovoData').value.trim();
+    const hora=document.getElementById('mmNovoHora').value.trim();
+    if(!a||!b){toast('Preencha os dois times!','err');return;}
+    mmJogosEdit.push({id:'mm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),fase,a,b,data,hora,golsA:null,golsB:null,apiId:null});
+    document.getElementById('mmNovoA').value='';document.getElementById('mmNovoB').value='';document.getElementById('mmNovoData').value='';document.getElementById('mmNovoHora').value='';
+    renderListaMMJogos();
+  });
+
+  const listaDiv=document.createElement('div');listaDiv.id='mmJogosLista';cont.appendChild(listaDiv);
+
+  const btnSalvar=document.createElement('button');
+  btnSalvar.className='btn-salvar-grande';
+  btnSalvar.style.width='100%';
+  btnSalvar.textContent='💾 SALVAR JOGOS E RESULTADOS';
+  btnSalvar.addEventListener('click',salvarMMJogos);
+  cont.appendChild(btnSalvar);
+
+  renderListaMMJogos();
+}
+
+function renderListaMMJogos(){
+  const listaDiv=document.getElementById('mmJogosLista');
+  if(!listaDiv)return;
+  listaDiv.innerHTML='';
+  if(!mmJogosEdit.length){listaDiv.innerHTML='<p style="color:#666;text-align:center;padding:14px;">Nenhum jogo cadastrado ainda.</p>';return;}
+  FASES_MM.forEach(f=>{
+    const doFase=mmJogosEdit.filter(j=>j.fase===f.id);
+    if(!doFase.length)return;
+    const h=document.createElement('div');h.className='grupo-header';h.textContent=f.label;listaDiv.appendChild(h);
+    doFase.forEach(j=>{
+      const row=document.createElement('div');row.className='mm-jogo-row';
+      row.innerHTML=
+        '<input type="text" class="mm-time" value="'+j.a+'" data-f="a">'
+        +'<span class="mm-x">×</span>'
+        +'<input type="text" class="mm-time" value="'+j.b+'" data-f="b">'
+        +'<input type="text" class="mm-data" value="'+(j.data||'')+'" placeholder="dd/mm" data-f="data">'
+        +'<input type="text" class="mm-hora" value="'+(j.hora||'')+'" placeholder="hh h" data-f="hora">'
+        +'<input type="number" class="mm-gol" min="0" value="'+(j.golsA===null||j.golsA===undefined?'':j.golsA)+'" placeholder="-" data-f="golsA">'
+        +'<span class="mm-x">×</span>'
+        +'<input type="number" class="mm-gol" min="0" value="'+(j.golsB===null||j.golsB===undefined?'':j.golsB)+'" placeholder="-" data-f="golsB">'
+        +'<button class="mm-del" data-id="'+j.id+'">🗑️</button>';
+      row.querySelectorAll('input').forEach(inp=>{
+        inp.addEventListener('input',()=>{
+          const campo=inp.dataset.f;
+          const jogo=mmJogosEdit.find(x=>x.id===j.id);
+          if(!jogo)return;
+          if(campo==='golsA'||campo==='golsB')jogo[campo]=inp.value===''?null:parseInt(inp.value,10);
+          else jogo[campo]=inp.value;
+        });
+      });
+      row.querySelector('.mm-del').addEventListener('click',()=>{
+        mmJogosEdit=mmJogosEdit.filter(x=>x.id!==j.id);
+        renderListaMMJogos();
+      });
+      listaDiv.appendChild(row);
+    });
+  });
+}
+
+async function salvarMMJogos(){
+  try{
+    await setDoc(doc(db,'config','mmJogos'),{lista:mmJogosEdit});
+    mmJogos=mmJogosEdit.map(j=>({...j}));
+    toast('💾 Jogos e resultados salvos!','ok');
+  }catch(e){
+    toast('Erro ao salvar: '+e.message,'err');
+  }
+}
+
+const STAGE_MAP_MM={
+  'LAST_32':'32avos','ROUND_OF_32':'32avos',
+  'ROUND_OF_16':'oitavas','LAST_16':'oitavas',
+  'QUARTER_FINALS':'quartas','QUARTERFINALS':'quartas',
+  'SEMI_FINALS':'semis','SEMIFINALS':'semis',
+  'THIRD_PLACE':'3lugar','THIRD_PLACE_FINAL':'3lugar',
+  'FINAL':'final',
+};
+
+function addLogMM(msg,tipo){
+  const log=document.getElementById('mmSyncLog');
+  if(!log)return;
+  log.classList.add('show');
+  const line=document.createElement('div');
+  line.className='log-'+tipo;
+  const hora=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  line.textContent='['+hora+'] '+msg;
+  log.appendChild(line);
+  log.scrollTop=log.scrollHeight;
+}
+
+async function sincronizarMMJogos(){
+  const btn=document.getElementById('btnSyncMM');
+  const statusEl=document.getElementById('mmSyncStatus');
+  const logEl=document.getElementById('mmSyncLog');
+  if(!btn||!statusEl)return;
+  if(logEl){logEl.innerHTML='';logEl.classList.add('show');}
+  btn.classList.add('loading');btn.innerHTML='⏳ BUSCANDO...';
+  statusEl.className='sync-status info';statusEl.style.display='block';statusEl.textContent='Conectando à API...';
+  addLogMM('Iniciando sincronização do mata-mata...','info');
+
+  try{
+    const url='https://api.football-data.org/v4/competitions/WC/matches?season=2026';
+    const resp=await fetch(url,{headers:{'X-Auth-Token':FD_TOKEN},mode:'cors'});
+    if(!resp.ok)throw new Error('API retornou status '+resp.status);
+    const data=await resp.json();
+    const matches=(data.matches||[]).filter(m=>m.stage&&m.stage!=='GROUP_STAGE');
+    addLogMM(matches.length+' jogo(s) de mata-mata encontrados na API','info');
+    if(!matches.length){
+      statusEl.className='sync-status info';statusEl.textContent='ℹ️ Nenhum jogo de mata-mata disponível na API ainda. Tente de novo após o fim da fase de grupos.';
+      btn.classList.remove('loading');btn.innerHTML='🔄 BUSCAR/ATUALIZAR VIA API';
+      return;
+    }
+
+    let criados=0,atualizados=0;
+    const naoMapeados=new Set();
+
+    matches.forEach(m=>{
+      const faseId=STAGE_MAP_MM[m.stage];
+      if(!faseId){naoMapeados.add(m.stage);return;}
+      const homeNome=normNome(m.homeTeam?.name||'?');
+      const awayNome=normNome(m.awayTeam?.name||'?');
+      const sc=m.score?.fullTime;
+      const golsA=(sc&&sc.home!==null&&sc.home!==undefined)?sc.home:null;
+      const golsB=(sc&&sc.away!==null&&sc.away!==undefined)?sc.away:null;
+      const dataObj=m.utcDate?new Date(m.utcDate):null;
+      const dataStr=dataObj?String(dataObj.getDate()).padStart(2,'0')+'/'+String(dataObj.getMonth()+1).padStart(2,'0'):'';
+      const horaStr=dataObj?String(dataObj.getHours()).padStart(2,'0')+'h'+(dataObj.getMinutes()?String(dataObj.getMinutes()).padStart(2,'0'):''):'';
+
+      let existente=mmJogosEdit.find(j=>j.apiId===m.id);
+      if(!existente)existente=mmJogosEdit.find(j=>j.fase===faseId&&((j.a===homeNome&&j.b===awayNome)||(j.a===awayNome&&j.b===homeNome)));
+
+      if(existente){
+        let mudou=false;
+        if(existente.golsA!==golsA||existente.golsB!==golsB){existente.golsA=golsA;existente.golsB=golsB;mudou=true;}
+        if(!existente.apiId){existente.apiId=m.id;mudou=true;}
+        if(dataStr&&existente.data!==dataStr){existente.data=dataStr;mudou=true;}
+        if(horaStr&&existente.hora!==horaStr){existente.hora=horaStr;mudou=true;}
+        if(mudou){atualizados++;addLogMM(homeNome+' x '+awayNome+' — atualizado','ok');}
+      } else {
+        mmJogosEdit.push({id:'mm_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),fase:faseId,a:homeNome,b:awayNome,data:dataStr,hora:horaStr,golsA,golsB,apiId:m.id});
+        criados++;
+        addLogMM(homeNome+' x '+awayNome+' ('+faseId+') — criado','ok');
+      }
+    });
+
+    naoMapeados.forEach(s=>addLogMM('Estágio não reconhecido: '+s+' (me avise pra eu ajustar o mapeamento)','warn'));
+
+    if(criados>0||atualizados>0){
+      await setDoc(doc(db,'config','mmJogos'),{lista:mmJogosEdit});
+      mmJogos=mmJogosEdit.map(j=>({...j}));
+      statusEl.className='sync-status ok';statusEl.textContent='✅ '+criados+' jogo(s) criado(s), '+atualizados+' atualizado(s)!';
+      toast('✅ Mata-mata sincronizado!','ok');
+      renderListaMMJogos();
+    } else {
+      statusEl.className='sync-status ok';statusEl.textContent='✅ Tudo já estava atualizado.';
+    }
+
+  }catch(e){
+    console.error('Sync MM erro:',e);
+    addLogMM('ERRO: '+e.message,'err');
+    statusEl.className='sync-status err';
+    statusEl.textContent=(e.message.includes('CORS')||e.message.includes('Failed to fetch'))?'❌ Bloqueio CORS. Tente pelo celular ou aguarde.':'❌ Erro: '+e.message;
+  }
+  btn.classList.remove('loading');btn.innerHTML='🔄 BUSCAR/ATUALIZAR VIA API';
+}
+
+// ----- Resumo de Acertos -----
+function renderMMResumo(){
+  const cont=document.getElementById('mmsub-resumo');
+  cont.innerHTML='';
+  if(!mmApostadores.length){cont.innerHTML='<p style="color:#666;text-align:center;padding:20px;">Nenhum participante no Mata-Mata ainda.</p>';return;}
+  if(!mmJogos.length){cont.innerHTML='<p style="color:#666;text-align:center;padding:20px;">Nenhum jogo cadastrado ainda.</p>';return;}
+
+  const jogosComResultado=mmJogos.filter(j=>typeof j.golsA==='number'&&typeof j.golsB==='number');
+  const ranking=mmApostadores.map(ap=>{
+    const pl=mmApostas[ap.id]||{};
+    let pts=0;
+    mmJogos.forEach(j=>{
+      if(typeof j.golsA==='number'&&typeof j.golsB==='number'&&pl[j.id]&&pl[j.id].a===j.golsA&&pl[j.id].b===j.golsB)pts++;
+    });
+    return{...ap,pts};
+  }).sort((a,b)=>b.pts-a.pts);
+
+  const info=document.createElement('div');
+  info.style.cssText='font-size:.78rem;color:#888;margin-bottom:14px;';
+  info.textContent=jogosComResultado.length+' de '+mmJogos.length+' jogo(s) com resultado cadastrado.';
+  cont.appendChild(info);
+
+  const maxPts=ranking[0]?.pts||1;
+  ranking.forEach((r,i)=>{
+    const row=document.createElement('div');row.className='ranking-stat-row';
+    const cor=i===0?'#FFD700':i===1?'#aaa':i===2?'#cd7f32':'#888';
+    const emoji=['🥇','🥈','🥉'][i]||(i+1)+'º';
+    row.innerHTML='<div class="ranking-stat-pos">'+emoji+'</div><div class="ranking-stat-nome">'+r.nome+'</div><div class="ranking-stat-bar"><div class="ranking-stat-fill" style="width:'+Math.round(r.pts/maxPts*100)+'%;background:'+cor+';"></div></div><div style="text-align:right;min-width:60px;"><div class="ranking-stat-val" style="color:'+cor+';">'+r.pts+'pts</div></div>';
+    cont.appendChild(row);
+  });
 }
 
 // ===== SYNC AUTOMÁTICO DE RESULTADOS =====
