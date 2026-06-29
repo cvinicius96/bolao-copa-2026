@@ -493,7 +493,7 @@ async function renderAcertos(){
 
   box.innerHTML='';
 
-  // Card de pontuação pessoal
+  // --- Card de pontuação pessoal (sempre visível) ---
   const resumo=document.createElement('div');
   resumo.style.cssText='background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px;';
   resumo.innerHTML=
@@ -512,9 +512,27 @@ async function renderAcertos(){
     +(jogosComResultado.length===0?'<div style="font-size:.72rem;color:#556;text-align:center;margin-top:10px;">Aguardando resultados...</div>':'');
   box.appendChild(resumo);
 
-  // Ranking geral
+  // --- Sub-abas: Ranking Geral | Detalhe por Jogo ---
+  const subTabs=document.createElement('div');
+  subTabs.style.cssText='display:flex;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--border);';
+
+  const mkSubTab=(label,key)=>{
+    const t=document.createElement('div');
+    t.style.cssText='flex:1;padding:10px;text-align:center;cursor:pointer;font-family:\'Bebas Neue\',cursive;font-size:.85rem;letter-spacing:1px;transition:all .2s;';
+    t.dataset.key=key;t.textContent=label;
+    return t;
+  };
+  const tRank=mkSubTab('🏅 Ranking Geral','ranking');
+  const tDet=mkSubTab('📋 Detalhe por Jogo','detalhe');
+  subTabs.appendChild(tRank);subTabs.appendChild(tDet);
+  box.appendChild(subTabs);
+
+  const panelRank=document.createElement('div');
+  const panelDet=document.createElement('div');
+  box.appendChild(panelRank);box.appendChild(panelDet);
+
+  // Conteúdo Ranking
   if(ranking.length>0){
-    const rh=document.createElement('div');rh.className='grupo-header';rh.style.marginBottom='8px';rh.textContent='🏅 RANKING GERAL';box.appendChild(rh);
     ranking.forEach((r,i)=>{
       const emoji=['🥇','🥈','🥉'][i]||(i+1)+'º';
       const cor=i===0?'#FFD700':i===1?'#aaa':i===2?'#cd7f32':'#888';
@@ -523,18 +541,19 @@ async function renderAcertos(){
       card.innerHTML='<div class="rank-pos" style="color:'+cor+';">'+emoji+'</div>'
         +'<div class="rank-nome">'+(r.id===mmApostador.id?'<span style="color:var(--gold);">'+r.nome+' 👈</span>':r.nome)+'</div>'
         +'<div class="rank-pts" style="color:'+cor+';">'+r.pts+'pts</div>';
-      box.appendChild(card);
+      panelRank.appendChild(card);
     });
+  } else {
+    panelRank.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px;">Nenhum participante no ranking ainda.</p>';
   }
 
-  // Detalhe jogo a jogo
-  const dh=document.createElement('div');dh.className='grupo-header';dh.style.cssText='margin-top:16px;margin-bottom:8px;';dh.textContent='📋 DETALHE POR JOGO';box.appendChild(dh);
+  // Conteúdo Detalhe por Jogo
   FASES.forEach(f=>{
     const doFase=linhas.filter(l=>l.j.fase===f.id);
     if(!doFase.length)return;
     const fh=document.createElement('div');
-    fh.style.cssText='font-size:.72rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:8px 0 4px;font-weight:700;';
-    fh.textContent=f.label;box.appendChild(fh);
+    fh.style.cssText='font-size:.72rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:8px 0 4px;font-weight:700;border-bottom:1px solid var(--border);margin-bottom:6px;';
+    fh.textContent=f.label;panelDet.appendChild(fh);
     doFase.forEach(l=>{
       const row=document.createElement('div');row.className='acerto-row';
       const emoji=l.status==='acerto'?'✅':l.status==='erro'?'❌':'⏳';
@@ -543,9 +562,26 @@ async function renderAcertos(){
       row.innerHTML='<div class="acerto-jogo">'+l.j.a+' × '+l.j.b+'</div>'
         +'<div class="acerto-info"><span>Palpite: '+palTxt+'</span><span>Resultado: '+resTxt+'</span></div>'
         +'<div class="acerto-emoji">'+emoji+'</div>';
-      box.appendChild(row);
+      panelDet.appendChild(row);
     });
   });
+
+  // Controle de sub-abas
+  let subAtiva='ranking';
+  const ativarSub=(key)=>{
+    subAtiva=key;
+    [tRank,tDet].forEach(t=>{
+      const ativo=t.dataset.key===key;
+      t.style.background=ativo?'linear-gradient(135deg,var(--green),var(--green2))':'var(--card2)';
+      t.style.color=ativo?'#fff':'var(--muted)';
+      t.style.borderBottom=ativo?'none':'1px solid var(--border)';
+    });
+    panelRank.style.display=key==='ranking'?'block':'none';
+    panelDet.style.display=key==='detalhe'?'block':'none';
+  };
+  tRank.addEventListener('click',()=>ativarSub('ranking'));
+  tDet.addEventListener('click',()=>ativarSub('detalhe'));
+  ativarSub('ranking'); // abre na aba Ranking por padrão
 }
 
 // =============================================

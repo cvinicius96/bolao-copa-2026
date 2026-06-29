@@ -2770,28 +2770,24 @@ async function sincronizarMMJogos(){
 function renderMMResumo(){
   const cont=document.getElementById('mmsub-resumo');
   cont.innerHTML='';
-  if(!mmApostadores.length){cont.innerHTML='<p style="color:#666;text-align:center;padding:20px;">Nenhum participante no Mata-Mata ainda.</p>';return;}
-  if(!mmJogos.length){cont.innerHTML='<p style="color:#666;text-align:center;padding:20px;">Nenhum jogo cadastrado ainda.</p>';return;}
 
-  // === Botões de controle ===
+  // === Botões de controle — SEMPRE visíveis ===
   const ctrlBox=document.createElement('div');
   ctrlBox.style.cssText='display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;';
 
-  // Botão: liberar/ocultar palpites dos adversários
   const btnPV=document.createElement('button');
   btnPV.className='btn-sync-res';
-  btnPV.style.cssText='flex:1;min-width:200px;'+( mmConfig.palpitesVisiveis?'background:rgba(0,180,80,.18);border-color:#00cc66;color:#00cc66;':'');
-  btnPV.innerHTML=mmConfig.palpitesVisiveis?'👁️ Palpites visíveis — Ocultar':'🙈 Liberar palpites dos adversários';
+  btnPV.style.cssText='flex:1;min-width:190px;font-size:.82rem;'+(mmConfig.palpitesVisiveis?'background:rgba(0,180,80,.2);border-color:#00cc66;color:#00cc66;':'');
+  btnPV.innerHTML=mmConfig.palpitesVisiveis?'👁️ Palpites visíveis &mdash; Ocultar':'🙈 Liberar palpites dos adversários';
   btnPV.addEventListener('click',async()=>{
     const novo=!mmConfig.palpitesVisiveis;
     await setDoc(doc(db,'config','mmConfig'),{palpitesVisiveis:novo},{merge:true});
-    toast((novo?'👁️ Palpites liberados para todos!':'🙈 Palpites ocultados.'),'ok');
+    toast(novo?'👁️ Palpites liberados para todos!':'🙈 Palpites ocultados.','ok');
   });
 
-  // Botão: encerrar/reabrir apostas
   const btnEnc=document.createElement('button');
   btnEnc.className='btn-sync-res';
-  btnEnc.style.cssText='flex:1;min-width:200px;'+( mmConfig.encerrado?'background:rgba(255,50,50,.15);border-color:#ff4444;color:#ff8888;':'');
+  btnEnc.style.cssText='flex:1;min-width:190px;font-size:.82rem;'+(mmConfig.encerrado?'background:rgba(255,50,50,.18);border-color:#ff4444;color:#ff8888;':'');
   btnEnc.innerHTML=mmConfig.encerrado?'🔓 Reabrir apostas':'🔒 Encerrar apostas';
   btnEnc.addEventListener('click',()=>{
     if(mmConfig.encerrado){
@@ -2807,6 +2803,17 @@ function renderMMResumo(){
 
   ctrlBox.appendChild(btnPV);ctrlBox.appendChild(btnEnc);
   cont.appendChild(ctrlBox);
+
+  // Statusline
+  const stLine=document.createElement('div');
+  stLine.style.cssText='display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;';
+  stLine.innerHTML=
+    '<span style="font-size:.75rem;padding:4px 10px;border-radius:6px;'+(mmConfig.palpitesVisiveis?'background:rgba(0,180,80,.12);color:#00cc66;border:1px solid #006633;':'background:rgba(255,255,255,.04);color:#666;border:1px solid #222;')+'">👁️ Adversários: '+(mmConfig.palpitesVisiveis?'<b>Visíveis</b>':'Ocultos')+'</span>'
+    +'<span style="font-size:.75rem;padding:4px 10px;border-radius:6px;'+(mmConfig.encerrado?'background:rgba(255,50,50,.12);color:#ff8888;border:1px solid #441111;':'background:rgba(255,255,255,.04);color:#666;border:1px solid #222;')+'">🔒 Apostas: '+(mmConfig.encerrado?'<b>Encerradas</b>':'Abertas')+'</span>';
+  cont.appendChild(stLine);
+
+  if(!mmApostadores.length){cont.innerHTML+='<p style="color:#666;text-align:center;padding:20px;">Nenhum participante no Mata-Mata ainda.</p>';return;}
+  if(!mmJogos.length){cont.innerHTML+='<p style="color:#666;text-align:center;padding:20px;">Nenhum jogo cadastrado ainda.</p>';return;}
 
   const jogosComResultado=mmJogos.filter(j=>typeof j.golsA==='number'&&typeof j.golsB==='number');
   const ranking=mmApostadores.map(ap=>{
