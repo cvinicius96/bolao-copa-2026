@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Gerar preview.png — Bolão Copa 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#111;display:flex;flex-direction:column;align-items:center;padding:30px 20px;font-family:'Roboto',sans-serif;gap:20px;}
+  .instrucoes{max-width:700px;background:#1a2a1a;border:1px solid #2a4a2a;border-radius:12px;padding:20px;color:#ccc;font-size:.88rem;line-height:1.7;}
+  .instrucoes h2{color:#FFD700;font-family:'Bebas Neue',cursive;letter-spacing:2px;margin-bottom:10px;font-size:1.3rem;}
+  .instrucoes ol{padding-left:18px;}
+  .instrucoes code{background:#0a1a0a;padding:2px 7px;border-radius:4px;color:#00cc66;font-size:.82rem;}
+  .btn-dl{background:linear-gradient(135deg,#FFD700,#FFA500);color:#000;border:none;border-radius:10px;padding:14px 32px;font-family:'Bebas Neue',cursive;font-size:1.2rem;letter-spacing:2px;cursor:pointer;margin-top:6px;}
+  .btn-dl:hover{opacity:.9;}
+
+  /* === CANVAS DE PREVIEW (1200×630) === */
+  #previewCanvas{
+    width:700px;height:368px; /* escala de exibição 700/1200 ≈ 58% */
+    border:2px solid #FFD700;border-radius:8px;
+    box-shadow:0 8px 40px rgba(0,0,0,.8);
+  }
+  #previewReal{
+    position:fixed;top:-9999px;left:-9999px;
+    width:1200px;height:630px;
+    background:radial-gradient(ellipse at 50% 0%,#004d00 0%,#001a00 50%,#000c00 100%);
+    overflow:hidden;
+  }
+  /* Textura diagonal */
+  #previewReal::before{
+    content:'';position:absolute;inset:0;
+    background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.012) 0px,rgba(255,255,255,.012) 1px,transparent 1px,transparent 28px);
+  }
+  .prev-border-top{position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,transparent,#FFD700,#FFA500,#FFD700,transparent);}
+  .prev-border-bot{position:absolute;bottom:0;left:0;right:0;height:6px;background:linear-gradient(90deg,transparent,#FFD700,#FFA500,#FFD700,transparent);}
+  .prev-glow{position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:600px;height:300px;background:radial-gradient(ellipse,rgba(0,150,0,.35) 0%,transparent 70%);pointer-events:none;}
+  .prev-trophy{position:absolute;top:38px;left:50%;transform:translateX(-50%);font-size:80px;line-height:1;filter:drop-shadow(0 0 20px rgba(255,215,0,.6));}
+  .prev-title{position:absolute;top:130px;left:0;right:0;text-align:center;font-family:'Bebas Neue',cursive;font-size:62px;color:#FFD700;letter-spacing:6px;line-height:1;text-shadow:0 0 30px rgba(255,215,0,.5),0 4px 12px rgba(0,0,0,.9);}
+  .prev-fase{position:absolute;top:200px;left:0;right:0;text-align:center;}
+  .prev-fase-pill{display:inline-block;background:linear-gradient(135deg,#006600,#00aa00);border:2px solid #FFD700;border-radius:50px;padding:10px 48px;font-family:'Bebas Neue',cursive;font-size:46px;color:#fff;letter-spacing:4px;box-shadow:0 0 30px rgba(0,200,0,.4);}
+  .prev-sub{position:absolute;top:285px;left:0;right:0;text-align:center;font-family:'Bebas Neue',cursive;font-size:22px;color:rgba(255,215,0,.65);letter-spacing:5px;}
+  .prev-link-box{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);white-space:nowrap;display:flex;align-items:center;gap:14px;background:rgba(0,0,0,.55);border:2px solid rgba(255,215,0,.5);border-radius:50px;padding:14px 36px;}
+  .prev-link-icon{font-size:28px;}
+  .prev-link-txt{font-family:'Bebas Neue',cursive;font-size:28px;color:#FFD700;letter-spacing:2px;}
+  .prev-link-url{font-size:14px;color:rgba(255,255,255,.5);font-family:'Roboto',sans-serif;}
+  .prev-bolao{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:'Bebas Neue',cursive;font-size:15px;color:rgba(255,215,0,.28);letter-spacing:5px;}
+  /* estrelas decorativas */
+  .prev-star{position:absolute;color:rgba(255,215,0,.18);font-size:120px;line-height:1;}
+</style>
+</head>
+<body>
+
+<div class="instrucoes">
+  <h2>📸 GERAR preview.png — OPEN GRAPH DO BOLÃO</h2>
+  <ol>
+    <li>Clique em <strong>"⬇️ Baixar preview.png"</strong> abaixo.</li>
+    <li>O arquivo será salvo como <code>preview.png</code> (1200×630px).</li>
+    <li>Envie esse arquivo para o seu repositório GitHub na raiz: <code>bolao-copa-2026/preview.png</code>.</li>
+    <li>Pronto! Quando o link for compartilhado no WhatsApp, esta imagem vai aparecer automaticamente.</li>
+  </ol>
+  <p style="margin-top:10px;color:#888;">⚠️ Se quiser trocar de fase, edite o texto "QUARTAS DE FINAL" no código fonte desta página e baixe novamente.</p>
+</div>
+
+<!-- Preview em tamanho reduzido para visualizar -->
+<canvas id="previewCanvas"></canvas>
+
+<button class="btn-dl" onclick="baixarPNG()">⬇️ Baixar preview.png (1200×630)</button>
+
+<!-- Elemento real em 1200×630 fora da tela -->
+<div id="previewReal">
+  <div class="prev-border-top"></div>
+  <div class="prev-border-bot"></div>
+  <div class="prev-glow"></div>
+  <div class="prev-star" style="left:-30px;top:-20px;">★</div>
+  <div class="prev-star" style="right:-30px;bottom:-20px;">★</div>
+  <div class="prev-trophy">🏆</div>
+  <div class="prev-title">BOLÃO COPA 2026</div>
+  <div class="prev-fase"><span class="prev-fase-pill">QUARTAS DE FINAL</span></div>
+  <div class="prev-sub">⚽ &nbsp; REGISTRE SEU PALPITE &nbsp; ⚽</div>
+  <div class="prev-link-box">
+    <span class="prev-link-icon">🥊</span>
+    <div>
+      <div class="prev-link-txt">CLIQUE AQUI PARA PARTICIPAR</div>
+      <div class="prev-link-url">cvinicius96.github.io/bolao-copa-2026/matamata.html</div>
+    </div>
+  </div>
+  <div class="prev-bolao">★ &nbsp; BOLÃO COPA 2026 &nbsp; ★</div>
+</div>
+
+<script>
+async function renderPreview(){
+  await document.fonts.ready;
+  const el=document.getElementById('previewReal');
+  const canvas=await html2canvas(el,{
+    width:1200,height:630,scale:1,
+    useCORS:true,allowTaint:true,
+    backgroundColor:'#000c00',logging:false
+  });
+  // Exibe thumbnail
+  const thumb=document.getElementById('previewCanvas');
+  thumb.width=700;thumb.height=368;
+  const ctx=thumb.getContext('2d');
+  ctx.drawImage(canvas,0,0,700,368);
+  thumb._fullCanvas=canvas;
+}
+function baixarPNG(){
+  const c=document.getElementById('previewCanvas')._fullCanvas;
+  if(!c){alert('Aguarde o preview carregar!');return;}
+  const a=document.createElement('a');
+  a.download='preview.png';
+  a.href=c.toDataURL('image/png');
+  a.click();
+}
+window.addEventListener('load',()=>setTimeout(renderPreview,500));
+</script>
+</body>
+</html>
