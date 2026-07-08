@@ -645,26 +645,6 @@ input:checked+.slider:before{transform:translateX(22px);background:#00dd00;}
   </div>
 </div>
 
-<!-- Modal Mesclar Duplicata -->
-<div id="mmMesclarModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;align-items:center;justify-content:center;padding:16px;">
-  <div id="mmMesclarBox" style="background:#0d1f0d;border:1px solid var(--border);border-radius:16px;padding:24px 20px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto;">
-    <h3 style="font-family:'Bebas Neue',cursive;color:var(--amarelo);letter-spacing:2px;font-size:1.2rem;margin-bottom:16px;">🔀 MESCLAR DUPLICATA</h3>
-    <div style="background:#0a1a0a;border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:16px;">
-      <div style="font-size:.7rem;color:#888;margin-bottom:4px;">MANTER (conta principal)</div>
-      <div id="mmMesclarManterNome" style="font-weight:700;color:var(--amarelo);font-size:1rem;"></div>
-      <div id="mmMesclarManterBets" style="font-size:.72rem;color:#666;margin-top:2px;"></div>
-    </div>
-    <label style="font-size:.75rem;color:#888;font-weight:700;letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:6px;">Duplicata a remover:</label>
-    <select id="mmMesclarSelect" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:#0a1a0a;color:var(--text);font-size:.9rem;outline:none;margin-bottom:6px;"></select>
-    <div id="mmMesclarDupBets" style="font-size:.72rem;color:#888;margin-bottom:14px;padding:6px 8px;background:rgba(255,170,68,.07);border-radius:6px;border:1px solid rgba(255,170,68,.15);display:none;"></div>
-    <p style="font-size:.75rem;color:#666;line-height:1.6;margin-bottom:16px;">Os palpites da duplicata serão copiados para a conta principal (somente nos jogos ainda sem palpite). Em seguida, a duplicata é removida permanentemente.</p>
-    <div style="display:flex;gap:10px;">
-      <button id="mmMesclarCancelar" style="flex:1;padding:11px;border-radius:8px;background:transparent;border:1px solid var(--border);color:#888;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.95rem;">Cancelar</button>
-      <button id="mmMesclarConfirmar" style="flex:1;padding:11px;border-radius:8px;background:linear-gradient(135deg,#7a4400,#cc7700);border:1px solid #aa5500;color:#fff;cursor:pointer;font-family:'Bebas Neue',cursive;font-size:.95rem;letter-spacing:1px;">🔀 Mesclar e Remover</button>
-    </div>
-  </div>
-</div>
-
 <!-- Badge Conexão -->
 <div class="conn-badge online" id="connBadge">
   <div class="conn-dot"></div>
@@ -1079,7 +1059,7 @@ let currentUser=null,isAdmin=false,apostadores=[],apostas={},resultados={};
 let mmApostadores=[],mmApostas={},mmJogos=[],mmJogosEdit=[];
 let mmEditApId=null;
 let mmPainelAtivo='participantes';
-let mmConfig={palpitesVisiveis:false,encerrado:false};
+let mmConfig={palpitesVisiveis:false,encerrado:false,palpitesOk:false,palpitesOkEm:null};
 let editPago=false;
 let bolaoConfig={palpitesVisiveis:false,encerrado:false};
 let jModo='grupo',jFiltro='TODOS',rModo='grupo',rFiltro='TODOS';
@@ -1113,7 +1093,7 @@ async function loadData(){
         mmApostadores=await fbList('mmApostadores');
         const mmAp=await fbList('mmApostas');mmApostas={};mmAp.forEach(a=>{mmApostas[a.id]=a.palpites||{};});
         const mmJ=await fbGet('config','mmJogos');mmJogos=mmJ?mmJ.lista||[]:[];
-        const mmCfg=await fbGet('config','mmConfig');if(mmCfg)mmConfig={palpitesVisiveis:false,encerrado:false,...mmCfg};
+        const mmCfg=await fbGet('config','mmConfig');if(mmCfg)mmConfig={palpitesVisiveis:false,encerrado:false,palpitesOk:false,palpitesOkEm:null,...mmCfg};
       })(),
       timeout
     ]);
@@ -1186,7 +1166,7 @@ function iniciarSync(){
     if(t&&t.dataset.tab==='mata-mata'&&mmPainelAtivo==='resumo')renderMMResumo();
   });
   onSnapshot(doc(db,'config','mmConfig'),s=>{
-    if(s.exists())mmConfig={palpitesVisiveis:false,encerrado:false,...s.data()};
+    if(s.exists())mmConfig={palpitesVisiveis:false,encerrado:false,palpitesOk:false,palpitesOkEm:null,...s.data()};
     const t=document.querySelector('.tab.active');
     if(t&&t.dataset.tab==='mata-mata'&&mmPainelAtivo==='resumo')renderMMResumo();
   });
@@ -2537,14 +2517,13 @@ function renderMMParticipantes(){
 
     const eng=document.createElement('button');eng.className='btn-engrenagem';eng.textContent='⚙️';eng.title='Gerenciar';
     const drop=document.createElement('div');drop.className='dropdown-menu';
-    drop.innerHTML='<div class="dropdown-item" data-action="editar">✏️ Editar dados</div><div class="dropdown-item" data-action="mesclar" style="color:#ffaa44;">🔀 Mesclar com duplicata</div><div class="dropdown-item" data-action="remover" style="color:#ff6666;">🗑️ Remover</div>';
+    drop.innerHTML='<div class="dropdown-item" data-action="editar">✏️ Editar dados</div><div class="dropdown-item" data-action="remover" style="color:#ff6666;">🗑️ Remover</div>';
     eng.addEventListener('click',e=>{e.stopPropagation();document.querySelectorAll('.dropdown-menu.open').forEach(d=>d.classList.remove('open'));drop.classList.toggle('open');});
     drop.addEventListener('click',e=>{
       e.stopPropagation();
       const action=e.target.dataset.action;
       drop.classList.remove('open');
       if(action==='editar')abrirMMEditModal(ap);
-      else if(action==='mesclar')abrirMMModalMesclar(ap);
       else if(action==='remover')confirmar('Remover "'+ap.nome+'" do Mata-Mata? Os palpites dele serão perdidos.',async()=>{await fbDel('mmApostadores',ap.id);await fbDel('mmApostas',ap.id);toast('🗑️ '+ap.nome+' removido do Mata-Mata!','ok');});
     });
 
@@ -2569,59 +2548,6 @@ function renderMMParticipantes(){
   });
   cont.appendChild(grid);
 }
-
-// ----- Mesclar Duplicatas MM -----
-let mmMesclarPrincipal=null;
-function abrirMMModalMesclar(ap){
-  mmMesclarPrincipal=ap;
-  document.getElementById('mmMesclarManterNome').textContent=ap.nome;
-  const betsMain=Object.keys(mmApostas[ap.id]||{}).length;
-  document.getElementById('mmMesclarManterBets').textContent=betsMain+' palpite(s) registrado(s)';
-  const sel=document.getElementById('mmMesclarSelect');
-  sel.innerHTML='<option value="">— selecione a duplicata —</option>';
-  mmApostadores.filter(a=>a.id!==ap.id).sort((a,b)=>a.nome.localeCompare(b.nome)).forEach(a=>{
-    const opt=document.createElement('option');
-    opt.value=a.id;
-    opt.textContent=a.nome+' ('+Object.keys(mmApostas[a.id]||{}).length+' palpites)';
-    sel.appendChild(opt);
-  });
-  document.getElementById('mmMesclarDupBets').style.display='none';
-  sel.onchange=()=>{
-    const dupId=sel.value;
-    if(!dupId){document.getElementById('mmMesclarDupBets').style.display='none';return;}
-    const dup=mmApostadores.find(a=>a.id===dupId);
-    const bets=Object.keys(mmApostas[dupId]||{}).length;
-    const el=document.getElementById('mmMesclarDupBets');
-    el.textContent='📋 '+dup.nome+': '+bets+' palpite(s) serão copiados para "'+ap.nome+'" (apenas jogos sem palpite).';
-    el.style.display='block';
-  };
-  document.getElementById('mmMesclarModal').style.display='flex';
-}
-document.getElementById('mmMesclarCancelar').addEventListener('click',()=>{
-  document.getElementById('mmMesclarModal').style.display='none';
-  mmMesclarPrincipal=null;
-});
-document.getElementById('mmMesclarConfirmar').addEventListener('click',async()=>{
-  const dupId=document.getElementById('mmMesclarSelect').value;
-  if(!dupId){toast('Selecione a duplicata a remover!','err');return;}
-  if(!mmMesclarPrincipal)return;
-  const dupAp=mmApostadores.find(a=>a.id===dupId);
-  if(!dupAp){toast('Participante não encontrado!','err');return;}
-  confirmar('Mesclar "'+dupAp.nome+'" em "'+mmMesclarPrincipal.nome+'" e remover a duplicata? Não pode ser desfeito.',async()=>{
-    try{
-      const mainPalpites={...mmApostas[mmMesclarPrincipal.id]||{}};
-      const dupPalpites=mmApostas[dupId]||{};
-      let copiados=0;
-      Object.entries(dupPalpites).forEach(([jid,v])=>{if(!mainPalpites[jid]){mainPalpites[jid]=v;copiados++;}});
-      await setDoc(doc(db,'mmApostas',mmMesclarPrincipal.id),{palpites:mainPalpites},{merge:false});
-      await fbDel('mmApostadores',dupId);
-      await fbDel('mmApostas',dupId);
-      document.getElementById('mmMesclarModal').style.display='none';
-      toast('✅ Mesclado! '+copiados+' palpite(s) copiado(s). Duplicata removida.','ok');
-      mmMesclarPrincipal=null;
-    }catch(e){console.error(e);toast('Erro ao mesclar. Tente novamente.','err');}
-  });
-});
 
 function abrirMMEditModal(ap){
   mmEditApId=ap.id;
@@ -2896,8 +2822,86 @@ function renderMMResumo(){
     +'<span style="font-size:.75rem;padding:4px 10px;border-radius:6px;'+(mmConfig.encerrado?'background:rgba(255,50,50,.12);color:#ff8888;border:1px solid #441111;':'background:rgba(255,255,255,.04);color:#666;border:1px solid #222;')+'">🔒 Apostas: '+(mmConfig.encerrado?'<b>Encerradas</b>':'Abertas')+'</span>';
   cont.appendChild(stLine);
 
+  // === Botão Palpites Ok ===
+  const okBox=document.createElement('div');
+  okBox.style.cssText='margin-bottom:16px;';
+  if(mmConfig.palpitesOk){
+    const okBanner=document.createElement('div');
+    okBanner.style.cssText='background:rgba(0,180,80,.12);border:1px solid #006633;border-radius:10px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;';
+    const okInfo=document.createElement('div');
+    okInfo.innerHTML='<div style="font-family:\'Bebas Neue\',cursive;color:#00cc66;font-size:.95rem;letter-spacing:1px;">✅ PALPITES APROVADOS</div>'
+      +(mmConfig.palpitesOkEm?'<div style="font-size:.7rem;color:#666;margin-top:2px;">em '+new Date(mmConfig.palpitesOkEm).toLocaleString('pt-BR')+'</div>':'');
+    const btnDesfazer=document.createElement('button');
+    btnDesfazer.textContent='Desfazer';
+    btnDesfazer.style.cssText='font-size:.72rem;color:#888;background:transparent;border:1px solid #333;border-radius:6px;padding:5px 12px;cursor:pointer;white-space:nowrap;';
+    btnDesfazer.addEventListener('click',async()=>{
+      await setDoc(doc(db,'config','mmConfig'),{palpitesOk:false,palpitesOkEm:null},{merge:true});
+      toast('Aprovação desfeita.','info');
+    });
+    okBanner.appendChild(okInfo);okBanner.appendChild(btnDesfazer);
+    okBox.appendChild(okBanner);
+  } else {
+    const btnOk=document.createElement('button');
+    btnOk.className='btn-sync-res';
+    btnOk.style.cssText='width:100%;background:rgba(0,180,80,.15);border-color:#00aa44;color:#00cc66;font-size:.85rem;letter-spacing:.5px;';
+    btnOk.textContent='✅ Palpites Ok — Confirmar revisão dos cadastros e jogos';
+    btnOk.addEventListener('click',()=>{
+      confirmar('Confirmar que todos os cadastros e jogos foram verificados e estão corretos? Esta ação sinaliza que o bolão está pronto para iniciar.',async()=>{
+        await setDoc(doc(db,'config','mmConfig'),{palpitesOk:true,palpitesOkEm:Date.now()},{merge:true});
+        toast('✅ Palpites aprovados!','ok');
+      });
+    });
+    okBox.appendChild(btnOk);
+  }
+  cont.appendChild(okBox);
+
   if(!mmApostadores.length){cont.innerHTML+='<p style="color:#666;text-align:center;padding:20px;">Nenhum participante no Mata-Mata ainda.</p>';return;}
-  if(!mmJogos.length){cont.innerHTML+='<p style="color:#666;text-align:center;padding:20px;">Nenhum jogo cadastrado ainda.</p>';return;}
+
+  // === Painel de Status de Palpites ===
+  const totalJogosSt=mmJogos.length;
+  const participantesStatus=mmApostadores.map(ap=>{
+    const pal=mmApostas[ap.id]||{};
+    const preenchidos=Object.keys(pal).filter(jid=>{const p=pal[jid];return p&&typeof p.a==='number'&&typeof p.b==='number';}).length;
+    return{...ap,preenchidos,pct:totalJogosSt>0?Math.round(preenchidos/totalJogosSt*100):0};
+  }).sort((a,b)=>b.pct-a.pct||a.nome.localeCompare(b.nome));
+
+  const completos=participantesStatus.filter(p=>totalJogosSt>0&&p.pct===100).length;
+  const parciais=participantesStatus.filter(p=>p.preenchidos>0&&p.pct<100).length;
+  const semPalpite=participantesStatus.filter(p=>p.preenchidos===0).length;
+
+  const statusHeader=document.createElement('div');
+  statusHeader.style.cssText='margin-bottom:8px;';
+  statusHeader.innerHTML=
+    '<div style="font-family:\'Bebas Neue\',cursive;font-size:.9rem;letter-spacing:1px;color:#aaa;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);">📋 STATUS DE PALPITES</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">'
+      +'<span style="font-size:.72rem;padding:3px 10px;border-radius:10px;background:rgba(0,204,102,.12);border:1px solid #006633;color:#00cc66;">✅ '+completos+' completos</span>'
+      +'<span style="font-size:.72rem;padding:3px 10px;border-radius:10px;background:rgba(255,170,68,.1);border:1px solid #664400;color:#ffaa44;">⚠️ '+parciais+' parciais</span>'
+      +'<span style="font-size:.72rem;padding:3px 10px;border-radius:10px;background:rgba(255,68,68,.08);border:1px solid #441111;color:#ff6666;">❌ '+semPalpite+' sem palpite</span>'
+    +'</div>';
+  cont.appendChild(statusHeader);
+
+  participantesStatus.forEach(p=>{
+    const emoji=totalJogosSt>0&&p.pct===100?'✅':p.preenchidos===0?'❌':'⚠️';
+    const cor=totalJogosSt>0&&p.pct===100?'#00cc66':p.preenchidos===0?'#ff4444':'#ffaa44';
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);';
+    row.innerHTML=
+      '<div style="font-size:.95rem;min-width:20px;text-align:center;">'+emoji+'</div>'
+      +'<div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+p.nome+'</div>'
+      +'<div style="min-width:72px;">'
+        +'<div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:2px;">'
+          +'<div style="height:100%;width:'+p.pct+'%;background:'+cor+';border-radius:2px;transition:width .3s;"></div>'
+        +'</div>'
+        +'<div style="font-size:.65rem;color:#555;text-align:right;">'+p.pct+'%</div>'
+      +'</div>'
+      +'<div style="font-family:\'Bebas Neue\',cursive;font-size:.85rem;color:'+cor+';min-width:42px;text-align:right;">'+p.preenchidos+'/'+(totalJogosSt||'—')+'</div>';
+    cont.appendChild(row);
+  });
+
+  if(!mmJogos.length)return;
+
+  // Separador
+  const sep=document.createElement('div');sep.style.cssText='margin:16px 0 12px;border-top:1px solid var(--border);';cont.appendChild(sep);
 
   const jogosComResultado=mmJogos.filter(j=>typeof j.golsA==='number'&&typeof j.golsB==='number');
   const ranking=mmApostadores.map(ap=>{
