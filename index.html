@@ -2861,11 +2861,16 @@ function renderMMResumo(){
   const totalJogosSt=mmJogos.length;
   const participantesStatus=mmApostadores.map(ap=>{
     const pal=mmApostas[ap.id]||{};
-    const preenchidos=Object.keys(pal).filter(jid=>{const p=pal[jid];return p&&typeof p.a==='number'&&typeof p.b==='number';}).length;
-    return{...ap,preenchidos,pct:totalJogosSt>0?Math.round(preenchidos/totalJogosSt*100):0};
+    // Contar SOMENTE os jogos cadastrados na fase atual (mmJogos)
+    const preenchidos=mmJogos.filter(j=>{
+      const p=pal[j.id];
+      return p&&typeof p.a==='number'&&p.a!==null&&typeof p.b==='number'&&p.b!==null;
+    }).length;
+    const pct=totalJogosSt>0?Math.round(preenchidos/totalJogosSt*100):0;
+    return{...ap,preenchidos,pct};
   }).sort((a,b)=>b.pct-a.pct||a.nome.localeCompare(b.nome));
 
-  const completos=participantesStatus.filter(p=>totalJogosSt>0&&p.pct===100).length;
+  const completos=participantesStatus.filter(p=>p.pct===100&&totalJogosSt>0).length;
   const parciais=participantesStatus.filter(p=>p.preenchidos>0&&p.pct<100).length;
   const semPalpite=participantesStatus.filter(p=>p.preenchidos===0).length;
 
@@ -2881,20 +2886,23 @@ function renderMMResumo(){
   cont.appendChild(statusHeader);
 
   participantesStatus.forEach(p=>{
-    const emoji=totalJogosSt>0&&p.pct===100?'✅':p.preenchidos===0?'❌':'⚠️';
-    const cor=totalJogosSt>0&&p.pct===100?'#00cc66':p.preenchidos===0?'#ff4444':'#ffaa44';
+    const completo=p.pct===100&&totalJogosSt>0;
+    const semNada=p.preenchidos===0;
+    const emoji=completo?'✅':semNada?'❌':'⚠️';
+    const cor=completo?'#00cc66':semNada?'#ff4444':'#ffaa44';
+    const barW=Math.min(100,p.pct); // nunca passa de 100%
     const row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);';
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);';
     row.innerHTML=
       '<div style="font-size:.95rem;min-width:20px;text-align:center;">'+emoji+'</div>'
-      +'<div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+p.nome+'</div>'
-      +'<div style="min-width:72px;">'
-        +'<div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:2px;">'
-          +'<div style="height:100%;width:'+p.pct+'%;background:'+cor+';border-radius:2px;transition:width .3s;"></div>'
+      +'<div style="flex:1;font-size:.82rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:'+(completo?'#ddd':semNada?'#666':'#ddd')+'">'+p.nome+'</div>'
+      +'<div style="min-width:80px;">'
+        +'<div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:2px;">'
+          +'<div style="height:100%;width:'+barW+'%;background:'+cor+';border-radius:3px;transition:width .4s;"></div>'
         +'</div>'
         +'<div style="font-size:.65rem;color:#555;text-align:right;">'+p.pct+'%</div>'
       +'</div>'
-      +'<div style="font-family:\'Bebas Neue\',cursive;font-size:.85rem;color:'+cor+';min-width:42px;text-align:right;">'+p.preenchidos+'/'+(totalJogosSt||'—')+'</div>';
+      +'<div style="font-family:\'Bebas Neue\',cursive;font-size:.9rem;color:'+cor+';min-width:46px;text-align:right;">'+p.preenchidos+'/'+(totalJogosSt||'—')+'</div>';
     cont.appendChild(row);
   });
 
